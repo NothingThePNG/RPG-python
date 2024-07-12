@@ -4,6 +4,8 @@ from random import *
 from time import sleep
 from classes import *
 
+
+
 creature_types = [["rat", 10], ["spider", 5]]
 
 player = Player()
@@ -46,6 +48,8 @@ def combat():
 
             player.attack(attacking)
         sleep(1)
+
+
 
 def play():
     combat()

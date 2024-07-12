@@ -5,8 +5,8 @@ class Creature:
     def __init__(self, attributes) -> None:
         self.name = attributes[0]
         self.health = attributes[1]
-        self.armor = 1
-        self.regen = 20
+        self.armor = 0
+        self.regen = 10
         self.melee = 5
         self.enemys: list[Creature] = []
     
@@ -43,3 +43,4 @@ class Player(Creature):
     def heal(self) -> None:
         self.health += self.regen
         g_print_str(f"{self} healed for {self.regen}")
+        g_print_str(f"{self} has {self.health}HP")
