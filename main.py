@@ -3,8 +3,7 @@ from get_type import *
 from random import *
 from time import sleep
 from classes import *
-
-
+from rich.console import Console
 
 creature_types = [["rat", 10], ["spider", 5]]
 

@@ -1,5 +1,7 @@
 from random import *
 from g_print import g_print_str
+# import ollama
+# ollama.pull("llama2")
 
 class Creature:
     def __init__(self, attributes) -> None:
@@ -44,3 +46,21 @@ class Player(Creature):
         self.health += self.regen
         g_print_str(f"{self} healed for {self.regen}")
         g_print_str(f"{self} has {self.health}HP")
+
+class Room:
+    def __init__(self, right, left, up, down, description, hostiles) -> None:
+        self.right = right
+        self.left = left
+        self.up = up
+        self.down = down
+        self.description = description
+        self.hostiles = hostiles
+        self.uniq = None
+    
+    def initialise(self) -> bool:
+        # ollama.chat(self.description)
+
+        if self.hostiles > 0:
+            return True
+        else:
+            False
