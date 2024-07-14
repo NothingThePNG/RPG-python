@@ -1,7 +1,7 @@
 import sys, time
 
 
-def g_print_str(words="", step=0.04, sepr="", front=""):
+def g_print_str(words="", step=0.01, sepr="", front=""):
   """
   print's words with a delay between each character 
   parameters: 
