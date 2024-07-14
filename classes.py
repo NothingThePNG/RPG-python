@@ -57,7 +57,7 @@ class Player(Creature):
 
 class Room:
     # all attributes the room will need
-    def __init__(self, description="A barron room", hostiles=0, uniq=None) -> None:
+    def __init__(self, description="A barron room with stone walls on each side and only a few canals for light with not much to see", hostiles=0, uniq=None) -> None:
         self.right = None
         self.left = None
         self.up = None
@@ -77,7 +77,7 @@ class Room:
             model="llama2",
             messages=[{
                 "role": "user",
-                "content": f"Wight a DnD stile discription for a {self.description}"
+                "content": f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
             }],
             stream=True
         )
