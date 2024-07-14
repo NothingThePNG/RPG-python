@@ -3,6 +3,7 @@
 
 * It's a text-bast RPG where you inreract thogh typing numbers
 * using python classes to keep track of stats
+* using ollama to make dicriptions of rooms with llama2
 
 I'm plaing on it being a game with a difind map but I will try to get AI, spasificly llama3, to make the discriptios of rooms an mostors.
 
