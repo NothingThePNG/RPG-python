@@ -1,8 +1,8 @@
 from random import *
 from g_print import g_print_str
+import sys
 import os
-# import ollama
-# ollama.pull("llama2")
+import ollama
 
 class Creature:
     def __init__(self, attributes) -> None:
@@ -72,6 +72,20 @@ class Room:
     def initialise(self):
         # ollama.chat(self.description)
         os.system(command="cls")
+
+        stream = ollama.chat(
+            model="llama2",
+            messages=[{
+                "role": "user",
+                "content": f"Wight a DnD stile discription for a {self.description}"
+            }],
+            stream=True
+        )
+        for chunk in stream:
+            sys.stdout.write(chunk["message"]["content"])
+            sys.stdout.flush()
+
+        print()
 
         return self
     
