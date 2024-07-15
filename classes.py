@@ -1,20 +1,29 @@
 from random import *
-from g_print import g_print_str
 import sys
 import os
-import ollama
+#import ollama
+
+class Colors:
+    reset="\033[0m"
+
+    orange="\033[33m"
+    purple="\033[35m"
+    blue="\033[34m"
+    red="\033[31m"
+    green="\033[32m"
 
 class Creature:
     def __init__(self, attributes) -> None:
-        self.name = attributes[0]
-        self.health = attributes[1]
-        self.armor = 0
-        self.regen = 10
-        self.damage = attributes[2]
+        self.name: str = attributes[0]
+        self.health: int = attributes[1]
+        self.damage: int = attributes[2]
+        self.armor: int = attributes[3]
+        self.regen: int = 15
         self.enemys: list[Creature] = []
+        self.items = []
     
     def hurt(self, damage: int, attacker):
-        self.health -= damage
+        self.health -= (damage - self.armor)
 
         if attacker not in self.enemys:
             self.enemys.append(attacker)
@@ -33,12 +42,12 @@ class Creature:
 
         # hurting the enemy and printing the result 
         enemy.hurt(self.damage, self)
-        g_print_str(words=f"{self} attacked {enemy} for {self.damage} damage")
-        g_print_str(words=f"{enemy} has {enemy.health}HP\n")
+        print(f"{self} attacked {enemy} for {self.damage} damage")
+        print(f"{enemy} has {enemy.health}HP\n")
 
         # if the enemy dies it is removed 
         if enemy.health <= 0:
-            g_print_str(words=f"{enemy} has died to {self}")
+            print(f"{enemy} has died to {self}")
             self.enemys.remove(enemy)
 
     def __str__(self) -> str:
@@ -47,17 +56,19 @@ class Creature:
 class Player(Creature):
     # giving the player the unique stats
     def __init__(self) -> None:
-        super().__init__(["player", 100, 8])
+        super().__init__(["player", 100, 8, 0])
 
     def heal(self) -> None:
         self.health += self.regen
 
-        g_print_str(f"{self} healed for {self.regen}")
-        g_print_str(f"{self} has {self.health}HP")
+        print(f"{self} healed for {self.regen}")
+        print(f"{self} has {self.health}HP")
 
 class Room:
     # all attributes the room will need
-    def __init__(self, description="A barron room with stone walls on each side and only a few canals for light with not much to see", hostiles=0, uniq=None) -> None:
+    def __init__(self, description="A barron room made of stone", 
+                 hostiles=[], 
+                 uniq=None) -> None:
         self.right = None
         self.left = None
         self.up = None
@@ -66,24 +77,35 @@ class Room:
         self.posable = []
 
         self.description = description
-        self.hostiles = hostiles
+        self.hostiles: list[Creature] = hostiles
         self.uniq = uniq
+        self.items = []
     
     def initialise(self):
         # ollama.chat(self.description)
         os.system(command="cls")
 
-        stream = ollama.chat(
-            model="llama2",
-            messages=[{
-                "role": "user",
-                "content": f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
-            }],
-            stream=True
-        )
-        for chunk in stream:
-            sys.stdout.write(chunk["message"]["content"])
-            sys.stdout.flush()
+        print(Colors.purple, end=" ")
+
+        prompt: str = f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
+
+        if self.uniq == "dark":
+            prompt = "room to dark to see anything"
+        if len(self.hostiles) > 0:
+            prompt += f"a there are hostiles consisting of {self.hostiles}"
+
+        
+        # stream = ollama.chat(
+        #     model="llama2",
+        #     messages=[{
+        #         "role": "user",
+        #         "content": prompt
+        #     }],
+        #     stream=True
+        # )
+        # for chunk in stream:
+        #     sys.stdout.write(chunk["message"]["content"])
+        #     sys.stdout.flush()
 
         print()
 
@@ -101,3 +123,15 @@ class Room:
             return self.down
         else:
             return "error"
+        
+    def analyze(self, direction):
+        if direction == "r":
+            self.right.initialise()
+        elif direction == "l":
+            self.left.initialise()
+        elif direction == "u":
+            self.up.initialise()
+        elif direction == "d":
+            self.down.initialise()
+        else:
+            print("error")
