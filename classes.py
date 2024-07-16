@@ -74,7 +74,7 @@ class Room:
         self.up = None
         self.down = None
 
-        self.posable = []
+        self.posable_direction = []
 
         self.description = description
         self.hostiles: list[Creature] = hostiles
@@ -113,25 +113,25 @@ class Room:
     
     # making the player move
     def move(self, direction):
-        if direction == "r":
+        if direction == "R":
             return self.right
-        elif direction == "l":
+        elif direction == "L":
             return self.left
-        elif direction == "u":
+        elif direction == "U":
             return self.up
-        elif direction == "d":
+        elif direction == "D":
             return self.down
         else:
             return "error"
         
     def analyze(self, direction):
-        if direction == "r":
+        if direction == "R":
             self.right.initialise()
-        elif direction == "l":
+        elif direction == "N":
             self.left.initialise()
-        elif direction == "u":
+        elif direction == "U":
             self.up.initialise()
-        elif direction == "d":
+        elif direction == "D":
             self.down.initialise()
         else:
             print("error")

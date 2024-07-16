@@ -107,14 +107,14 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
         want_lower: if true it will make the inputed string lower case so it is not case sensative
   """
 
-  inp = input(output).strip()
+  inp = input(output).strip()[0]
   if want_lower:
-    inp = inp.lower()
+    inp = inp.upper()
   while inp not in acceptable:
     print(invalid)
-    inp = input(output).strip()
+    inp = input(output).strip()[0]
     if want_lower:
-      inp = inp.lower()
+      inp = inp.upper()
   return inp
 
 def get_accept(output="Do you want to continue (y/n): ", inp="___ ", conform=["y"], deny=["n"], want_lower=True):
