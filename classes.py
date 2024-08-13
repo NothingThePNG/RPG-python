@@ -16,14 +16,17 @@ class Creature:
     def __init__(self, attributes) -> None:
         self.name: str = attributes[0]
         self.health: int = attributes[1]
+        self.max_health: int = attributes[1]
         self.damage: int = attributes[2]
         self.armor: int = attributes[3]
-        self.regen: int = 15
+        self.regen: int = attributes[4]
         self.enemys: list[Creature] = []
-        self.items = []
+
+        self.xp = 0
+        self.level = 1
     
     def hurt(self, damage: int, attacker):
-        self.health -= (damage - self.armor)
+        self.health -= max((damage - self.armor), 0)
 
         if attacker not in self.enemys:
             self.enemys.append(attacker)
@@ -55,11 +58,22 @@ class Creature:
 
 class Player(Creature):
     # giving the player the unique stats
-    def __init__(self) -> None:
-        super().__init__(["player", 100, 8, 0])
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+
+        self.health: int = 100
+        self.max_health: int = 100
+        self.damage: int = 10
+        self.armor: int = 0
+        self.regen: int = 15
+
+        self.enemys: list[Creature] = []
+
+        self.xp = 0
+        self.level = 1
 
     def heal(self) -> None:
-        self.health += self.regen
+        self.health = min((self.health + self.regen), self.max_health)
 
         print(f"{self} healed for {self.regen}")
         print(f"{self} has {self.health}HP")
@@ -69,30 +83,40 @@ class Room:
     def __init__(self, description="A barron room made of stone", 
                  hostiles=[], 
                  uniq=None) -> None:
+        # all adjacent rooms that the player can move to
         self.right = None
         self.left = None
         self.up = None
         self.down = None
-
         self.posable_direction = []
 
+        # room info
         self.description = description
         self.hostiles: list[Creature] = hostiles
         self.uniq = uniq
         self.items = []
+
+        # map info
+        self.discoverd = False
+        self.has_player = False
     
     def initialise(self):
         # ollama.chat(self.description)
-        os.system(command="cls")
 
-        print(Colors.purple, end=" ")
+        self.discoverd = True
+        self.has_player = True
+
+        print(Colors.purple, end="")
 
         prompt: str = f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
 
         if self.uniq == "dark":
             prompt = "room to dark to see anything"
-        if len(self.hostiles) > 0:
-            prompt += f"a there are hostiles consisting of {self.hostiles}"
+        else:
+            if len(self.hostiles) > 0:
+                prompt += f"a there are hostiles consisting of {self.hostiles}"
+            
+            prompt += f"with doors leading off ({", ".join(self.posable_direction)})"
 
         
         # stream = ollama.chat(
@@ -106,9 +130,7 @@ class Room:
         # for chunk in stream:
         #     sys.stdout.write(chunk["message"]["content"])
         #     sys.stdout.flush()
-
-        print()
-
+        
         return self
     
     # making the player move
@@ -123,15 +145,3 @@ class Room:
             return self.down
         else:
             return "error"
-        
-    def analyze(self, direction):
-        if direction == "R":
-            self.right.initialise()
-        elif direction == "N":
-            self.left.initialise()
-        elif direction == "U":
-            self.up.initialise()
-        elif direction == "D":
-            self.down.initialise()
-        else:
-            print("error")

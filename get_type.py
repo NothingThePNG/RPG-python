@@ -1,4 +1,4 @@
-def get_int(output="Not a num: ", num="", first_out=1, vaid_range=None, range_out="Not in range: "):
+def get_int(output="Not a num: ", num="a", first_out=1, vaid_range=None, range_out="Not in range: "):
   '''
   This is a funtion to get integers with a output, and a optional number.
   This fition will contiueasly loop asking the user for an input in till it gets a number
@@ -18,7 +18,7 @@ def get_int(output="Not a num: ", num="", first_out=1, vaid_range=None, range_ou
   range_out: str
     the output that will be printed when the user gets an valid input that is not in the range if not changed it will be 'Not in range: '
   '''
-  if first_out == str:
+  if type(first_out) == str:
     num = input(first_out)
   
   if type(vaid_range) == list and len(vaid_range) == 2:
@@ -98,7 +98,7 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
   This funtion takes an out put and a list of acceptable inputs
   if the input is not in the list it will contiue to ask the user for a input
   if the input is in the list it will return the input
-
+  
   praramiters 
         output: what will be displyed each time the user is asked for a input
         acceptable: a list of acceptable inputs
@@ -106,16 +106,13 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
         inp: the inputed string so if you want the fisert time to be unice you can have your own input and have this to cheek it and display somthing else as other inputs if it was wrrong 
         want_lower: if true it will make the inputed string lower case so it is not case sensative
   """
-
-  inp = input(output).strip()[0]
-  if want_lower:
-    inp = inp.upper()
+  inp = input(output).strip().upper()
   while inp not in acceptable:
     print(invalid)
-    inp = input(output).strip()[0]
+    inp = input(output).strip()
     if want_lower:
       inp = inp.upper()
-  return inp
+  return inp[0]
 
 def get_accept(output="Do you want to continue (y/n): ", inp="___ ", conform=["y"], deny=["n"], want_lower=True):
   """

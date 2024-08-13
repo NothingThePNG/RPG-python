@@ -1,141 +1,135 @@
-from get_type import *
 from random import *
 from time import sleep
 from classes import *
 from rich.console import Console
 from maps import *
+from combat import *
+from get_type import get_val_str
 
-player = Player()
+os.system("cls")
 
-# telling the Room classes the adjacent rooms
-def make_map(new_map) -> Room:
-    # going though each element of the 2d list
-    for y in range(len(new_map)):
-        for x in range(len(new_map[y])):
-            # skipping empty cells
-            if new_map[y][x] == None:
-                continue
-
-            # making sure that there are cells above below and next to, so that the program wont break
-            if x > 0:
-                if new_map[y][x-1] != None:
-                    new_map[y][x].left = new_map[y][x-1]
-                    new_map[y][x].posable_direction.append("L")
-            if x < len(new_map[y])-1:
-                if new_map[y][x+1] != None:
-                    new_map[y][x].right = new_map[y][x+1]
-                    new_map[y][x].posable_direction.append("R")
-            if y < len(new_map)-1:
-                if new_map[y+1][x] != None:
-                    new_map[y][x].down = new_map[y+1][x]
-                    new_map[y][x].posable_direction.append("D")
-            if y > 0:
-                if new_map[y-1][x] != None:
-                    new_map[y][x].up = new_map[y-1][x]
-                    new_map[y][x].posable_direction.append("U")
-
-            if new_map[y][x].uniq == "next":
-                new_map[y][x].posable_direction.append("N")
-    
-    # the first room is always the top left
-    return new_map[0][0]
-
-def start_combat(hostiles):
-    # telling the player what is fighting them
-    print(Colors.red, "You are attacked by:")
-
-    for i in range(len(hostiles)):
-        hostiles[i].enemys.append(player)
-        print(f"{i+1}    -   {hostiles[i]} {hostiles[i].health}HP")
-    
-    sleep(1)
-
-    print(Colors.blue, f"You have {player.health}HP\n")
-
-    sleep(0.2)
-
-    player.enemys = hostiles # getting the player class to know what can be attacked 
-
-    return hostiles
-
-def combat(hostiles, currant_room):
-    hostiles = start_combat(hostiles=hostiles)
-
-    while len(hostiles) > 0 and player.health > 0:
-        print(Colors.red, end=" ")
-        # getting the hostiles to attack the player
-        for i in hostiles:
-            i.attack(None)
-            sleep(.5)
-        
-        action = get_val_str(output=f"{Colors.orange}\nDo you want to \nH: Heal \nA: Attack\n", acceptable=["H", "HEAL", "A", "ATTACK"])
-        print()
-        # running the action the player wants
-        if action == "H":
-            print(Colors.blue, end=" ")
-            player.heal()
-        elif action == "A":
-            attacking = "yes"
-            # getting a valid target 
-            while type(attacking) == str:
-                attacking = input("Who do you want to attack?: ").lower()
+# a function for getting each line of the map
+def get_lines(currant_map: list, line_index: int) -> str:
+    top = [] # the paths up
+    line = "" # the rooms
+    out = "" # output
+    if line_index > 0:
+        for r in currant_map[line_index-1]:
+            if r == None:
+                top.append(" ")
                 
-                if attacking.isnumeric():
-                    if int(attacking)-1 in range(0, len(player.enemys)):
-                        attacking = int(attacking)-1
-                    else:
-                        print("Not in range.")
+            elif r.discoverd:
+                if r.down != None:
+                    top.append("|")
                 else:
-                    # attacking the first creature with the name the player inputted
-                    for i in range(len(player.enemys)):
-                        if player.enemys[i].name == attacking:
-                            attacking = i
+                    top.append(" ")
+            else:
+                top.append(" ")
 
-            # displaying the players hit 
-            print(Colors.blue, end=" ")
-            player.attack(hit=attacking)
-        
-        if len(hostiles) > 0:
-            # contiguously displaying the enemies so the player dose not have to remember 
-            print(Colors.red, "You are attacked by:")
+    for r in range(len(currant_map[line_index])):
+        if currant_map[line_index][r] == None:
+            line += "   "
+            top.append(" ")
+                
+        elif currant_map[line_index][r].discoverd:
+            if currant_map[line_index][r].left != None:
+                line += "-"
+            else:
+                line += " "
+            
+            # if the room is the room that lets the plyer go to the next map
+            if "N" in currant_map[line_index][r].posable_direction:
+                line += "N"
 
-            for i in range(len(hostiles)):
-                hostiles[i].enemys.append(player)
-                print(f"{i+1}    -   {hostiles[i]} {hostiles[i].health}HP")
-        sleep(1)
+            # the room the player currently is
+            elif currant_map[line_index][r].has_player:
+                line += "@"
+            # a room
+            else:
+                line += "#"
 
-    currant_room.hostiles = hostiles
+            # there is a room right
+            if currant_map[line_index][r].right != None:
+                line += "-"
+            # no room right
+            else:
+                line += " "
+            
+            # there is a room above
+            if currant_map[line_index][r].up != None:
+                top[r] = "|"
+                
+            else:
+                top.append(" ")
+
+        else:
+            line += "   "
+            top.append(" ")
+
+    if top.count("|") > 0:
+        out += " " + "  ".join(top) + "\n"
+
+    if line.count(" ") < len(currant_map[line_index])*3-1:
+        out += line
+
+    # not preventing unnecessary lines being printed
+    if out != "":
+        print(out)
+
+# a function that prints each line of the map
+def draw_map(current_map):
+    os.system("cls")
+    print(Colors.purple, end="")
+
+    for y in range(len(current_map)):
+        get_lines(currant_map=current_map, line_index=y)
 
 def tutorial():
-    print("You will be prompted to move")
+    print("-------------------Movement------------------")
+    print("You will be given a map of the currently explored areas when this stage starts")
+    print("You can move or analyze")
 
 # a function that hands player movement
 def play():
-    currant_map: str = "map1"
-    currant_room: Creature = make_map(new_map=map1) # starting at map1
+    name = input(f"{Colors.orange}What is your characters name: ")
+    player = Player(name=name)
+
+    currant_map_index: int = 0 # starting at map1
+    currant_map: list = next[currant_map_index]
+
+    currant_room: Room = currant_map[0][0] 
     currant_room.initialise()
 
     while currant_room.uniq != "exit": # intl the player reaches the exit
-
+        draw_map(current_map=currant_map) # drawing the map
+        
         # using the list of posable path ways to get a input as to which the player will move
         dire: str = get_val_str(
-          output=f"{Colors.orange}Where do you want to go? ({', '.join(currant_room.posable_direction)}): ",
-          acceptable=currant_room.posable_direction
+            output=f"Where do you want to go? ({', '.join(currant_room.posable_direction)}): ",
+            acceptable=currant_room.posable_direction
         )
+
+        # going to the next map
         if dire == "N":
-            currant_room = make_map(new_map=next[currant_map][1])
-            currant_map = next[currant_map][0]
-            print(Colors.green, "You go up the stars.")
+            currant_map_index += 1
+            try:
+                currant_map: list = next[currant_map_index]
+            # the final map
+            except IndexError:
+                print(Colors.green + "You escaped")     
+            currant_room: Room = currant_map[0][0] # the starting room is always in the top right corner
+            print(Colors.green, "You go up the stars.") # giving feed back to player
+            currant_room.initialise() # getting the AI to make a description
+        # moving to the next room
         else:
+            currant_room.has_player = False
             next_room: Creature = currant_room.move(dire) # moving rooms 
             currant_room = next_room.initialise() # initializing the next room
 
         # if there are hostiles combat will start
         if len(currant_room.hostiles) > 0:
-           combat(hostiles=currant_room.hostiles, currant_room=currant_room)
+            run_combat(hostiles=currant_room.hostiles, currant_room=currant_room, player=player)
         
-    print(Colors.green, "You escaped")
-
 
 def main():
     if __name__ == "__main__":
