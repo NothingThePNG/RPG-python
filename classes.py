@@ -1,7 +1,11 @@
 from random import *
-import sys
-import os
+from get_type import *
 #import ollama
+
+
+def clamp(number, minn, maxn):
+    return max(min(maxn, number), minn)
+
 
 class Colors:
     reset="\033[0m"
@@ -22,11 +26,14 @@ class Creature:
         self.regen: int = attributes[4]
         self.enemys: list[Creature] = []
 
-        self.xp = 0
+        self.xp = attributes[5]
         self.level = 1
     
     def hurt(self, damage: int, attacker):
         self.health -= max((damage - self.armor), 0)
+
+        print(f"{attacker} attacked {self} for {damage} damage")
+        print(f"{self} has {self.health}HP\n")
 
         if attacker not in self.enemys:
             self.enemys.append(attacker)
@@ -35,7 +42,7 @@ class Creature:
     def attack(self, hit) -> None:
         # if there is no enemys in it's list
         if len(self.enemys) <= 0:
-            return None
+            return 0
         
         # if there was a specific creature to be attacked it will run on them else it will chose a random
         if hit == None:
@@ -45,44 +52,85 @@ class Creature:
 
         # hurting the enemy and printing the result 
         enemy.hurt(self.damage, self)
-        print(f"{self} attacked {enemy} for {self.damage} damage")
-        print(f"{enemy} has {enemy.health}HP\n")
 
         # if the enemy dies it is removed 
         if enemy.health <= 0:
             print(f"{enemy} has died to {self}")
+            self.xp += enemy.xp
             self.enemys.remove(enemy)
+            return enemy.xp
+        return 0
 
     def __str__(self) -> str:
         return self.name
 
 class Player(Creature):
     # giving the player the unique stats
-    def __init__(self, name: str) -> None:
-        self.name: str = name
+    def __init__(self, attributes: list, ) -> None:
+        self.name: str = attributes[0]
 
-        self.health: int = 100
-        self.max_health: int = 100
-        self.damage: int = 10
-        self.armor: int = 0
-        self.regen: int = 15
+        self.health: int = int(attributes[1])
+        self.max_health: int = int(attributes[2])
+        self.damage: int = int(attributes[3])
+        self.armor: int = int(attributes[4])
+        self.regen: int = int(attributes[5])
 
         self.enemys: list[Creature] = []
 
-        self.xp = 0
-        self.level = 1
+        self.xp = int(attributes[6])
+        self.level = int(attributes[7])
+        self.xp_need = 20
+        for i in range(self.level-1):
+            self.xp_need += 5
 
-    def heal(self) -> None:
-        self.health = min((self.health + self.regen), self.max_health)
+    def heal(self, regen=0) -> None:
+        if regen == 0:
+            regen = self.regen
 
-        print(f"{self} healed for {self.regen}")
+        self.health = (self.health + regen)
+        self.health = clamp(number=self.health, minn=0, maxn=self.max_health)
+
+        print(f"{self} healed for {regen}")
         print(f"{self} has {self.health}HP")
+    
+    def level_up(self):
+        stat = get_val_str(output=f"""Do you want to upgrade:
+    R: regen {self.regen} -> {self.regen + 5}
+    M: max health {self.max_health} -> {self.max_health + 10}
+    S: strength {self.damage} -> {self.damage + 5}
+    A: armor {self.armor} -> {self.armor + 2}
+> """, acceptable=["R", "M", "S", "A"])
+
+        if stat == "R":
+            self.regen += 5
+        elif stat == "M":
+            self.max_health += 10
+        elif stat == "S":
+            self.damage += 5
+        else:
+            self.armor += 2
+        
+        self.xp -= self.xp_need
+        self.xp_need += 5
+        self.level += 1
+
+    def whirl_strike(self):
+        for enemy in self.enemys:
+            enemy.hurt(damage=int(self.damage/3), attacker=self)
+
+            if enemy.health <= 0:
+                print(f"{enemy} has died to {self}")
+                self.xp += enemy.xp
+                self.enemys.remove(enemy)
+                return enemy.xp
+
 
 class Room:
     # all attributes the room will need
     def __init__(self, description="A barron room made of stone", 
                  hostiles=[], 
-                 uniq=None) -> None:
+                 uniq=None,
+                 items=[])-> None:
         # all adjacent rooms that the player can move to
         self.right = None
         self.left = None
@@ -94,54 +142,57 @@ class Room:
         self.description = description
         self.hostiles: list[Creature] = hostiles
         self.uniq = uniq
-        self.items = []
+        self.items = items
 
         # map info
         self.discoverd = False
         self.has_player = False
     
     def initialise(self):
-        # ollama.chat(self.description)
-
-        self.discoverd = True
         self.has_player = True
 
-        print(Colors.purple, end="")
+        if not self.discoverd:
+            # ollama.chat(self.description)
 
-        prompt: str = f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
+            self.discoverd = True
 
-        if self.uniq == "dark":
-            prompt = "room to dark to see anything"
-        else:
-            if len(self.hostiles) > 0:
-                prompt += f"a there are hostiles consisting of {self.hostiles}"
+            print(Colors.purple, end="")
+
+            prompt: str = f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
+
+            if self.uniq == "dark":
+                prompt = "room to dark to see anything"
+            else:
+                if len(self.hostiles) > 0:
+                    prompt += f"a there are hostiles consisting of {self.hostiles}"
+                
+                prompt += f"with doors leading off ({", ".join(self.posable_direction)})"
+
             
-            prompt += f"with doors leading off ({", ".join(self.posable_direction)})"
-
+            # stream = ollama.chat(
+            #     model="llama2",
+            #     messages=[{
+            #         "role": "user",
+            #         "content": prompt
+            #     }],
+            #     stream=True
+            # )
+            # for chunk in stream:
+            #     sys.stdout.write(chunk["message"]["content"])
+            #     sys.stdout.flush()
         
-        # stream = ollama.chat(
-        #     model="llama2",
-        #     messages=[{
-        #         "role": "user",
-        #         "content": prompt
-        #     }],
-        #     stream=True
-        # )
-        # for chunk in stream:
-        #     sys.stdout.write(chunk["message"]["content"])
-        #     sys.stdout.flush()
-        
-        return self
+            return self, True
+        return self, False
     
     # making the player move
     def move(self, direction):
-        if direction == "R":
+        if direction == "D":
             return self.right
-        elif direction == "L":
+        elif direction == "A":
             return self.left
-        elif direction == "U":
+        elif direction == "W":
             return self.up
-        elif direction == "D":
+        elif direction == "S":
             return self.down
         else:
             return "error"
