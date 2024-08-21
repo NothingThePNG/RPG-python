@@ -28,8 +28,10 @@ class Creature:
 
         self.xp = attributes[5]
         self.level = 1
+
+        self.items: list = []
     
-    def hurt(self, damage: int, attacker):
+    def hurt(self, damage: int, attacker) -> bool:
         self.health -= max((damage - self.armor), 0)
 
         print(f"{attacker} attacked {self} for {damage} damage")
@@ -38,11 +40,23 @@ class Creature:
         if attacker not in self.enemys:
             self.enemys.append(attacker)
 
+        if self.health <= 0:
+            attacker.xp += self.xp
+            print(f"{attacker} got {self.xp}xp")
+            print(f"{attacker} now has {attacker.xp}xp")
+
+            if len(self.items) > 0:
+                for item in self.items:
+                    attacker.items.append(item)
+                    print(f"{attacker} got {item[0]}")
+            return True
+        return False
+
     # attacking 
     def attack(self, hit) -> None:
         # if there is no enemys in it's list
         if len(self.enemys) <= 0:
-            return 0
+            return 
         
         # if there was a specific creature to be attacked it will run on them else it will chose a random
         if hit == None:
@@ -51,15 +65,8 @@ class Creature:
             enemy: Creature = self.enemys[hit]
 
         # hurting the enemy and printing the result 
-        enemy.hurt(self.damage, self)
-
-        # if the enemy dies it is removed 
-        if enemy.health <= 0:
-            print(f"{enemy} has died to {self}")
-            self.xp += enemy.xp
+        if enemy.hurt(self.damage, self):
             self.enemys.remove(enemy)
-            return enemy.xp
-        return 0
 
     def __str__(self) -> str:
         return self.name
@@ -69,19 +76,23 @@ class Player(Creature):
     def __init__(self, attributes: list, ) -> None:
         self.name: str = attributes[0]
 
-        self.health: int = int(attributes[1])
-        self.max_health: int = int(attributes[2])
-        self.damage: int = int(attributes[3])
-        self.armor: int = int(attributes[4])
+        self.xp: int = int(attributes[1])
+        self.level: int = int(attributes[2])
+        self.xp_need: int = 20
+        for i in range(self.level-1):
+            self.xp_need += 5
+
+        self.health: int = int(attributes[3])
+        self.max_health: int = int(attributes[4])
         self.regen: int = int(attributes[5])
+        self.damage: int = int(attributes[6])
 
         self.enemys: list[Creature] = []
 
-        self.xp = int(attributes[6])
-        self.level = int(attributes[7])
-        self.xp_need = 20
-        for i in range(self.level-1):
-            self.xp_need += 5
+        self.items: list = []
+
+        self.armor = attributes[7]
+        self.weapon = attributes[8]
 
     def heal(self, regen=0) -> None:
         if regen == 0:
@@ -98,8 +109,7 @@ class Player(Creature):
     R: regen {self.regen} -> {self.regen + 5}
     M: max health {self.max_health} -> {self.max_health + 10}
     S: strength {self.damage} -> {self.damage + 5}
-    A: armor {self.armor} -> {self.armor + 2}
-> """, acceptable=["R", "M", "S", "A"])
+> """, acceptable=["R", "M", "S"])
 
         if stat == "R":
             self.regen += 5
@@ -107,8 +117,6 @@ class Player(Creature):
             self.max_health += 10
         elif stat == "S":
             self.damage += 5
-        else:
-            self.armor += 2
         
         self.xp -= self.xp_need
         self.xp_need += 5

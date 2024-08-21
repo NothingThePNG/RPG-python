@@ -1,13 +1,11 @@
 from random import *
 from time import sleep
 from classes import *
-from rich.console import Console
 from levels import *
 from combat import *
 from maps import *
 import pandas
-import keyboard
-import csv
+import pickle
 
 os.system("cls")
 
@@ -18,9 +16,8 @@ def tutorial():
     print("The map will have:")
     print("     -     # for explored rooms")
     print("     -     @ for the current room")
-    print("     -     B for the room that takes you to the prev map")
     print("     -     N for the room that takes you to the next map")
-    print("There is only one N and B room per map and if you are in one there will be no @ on the map only the N and B")
+    print("There is only one N room per map and if you are in one there will be no @ on the map only the N")
     print("When you go up a floor you will not be able to go back down so make sure you're done exploring")
     print("\nThere is also lines ie (- |) witch show the directions you can move")
     print("To move you will have a prompt such as")
@@ -53,25 +50,31 @@ H: Heal
     print("     -     Red: enemy action")
     print("     -     Blue: player action")
     print("     -     Orange: input")
-    print("\n")
     print("\n\n-------------------Save/Load------------------")
-    print("")
+    print("You save by going to the next level")
+    print("This is automatically done each level")
+    print("The game will only save at the start of levels")
+    print("You load a save by reopening the game where you will be promoted to load a save")
+    print("You can chose not to and make a new game or chose to where you will need to input the index of the wanted save")
+    print("\n")
 
 
 def save(player, index):
     # xp, level, health, max_health, regen, damage, armour, map_index
 
-    data = [[player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage, player.armor, index]]
+    with open("save.dat", "rb") as read:
+        data = pickle.load(read)
 
-    with open("save.csv", "a+", newline ='') as save:
-        write = csv.writer(save)
-        write.writerows(data)
+    data.append([player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage, player.armor, player.weapon, index+1])
+
+    with open("save.dat", "wb", newline ='') as save:
+        pickle.dump(data, save)
 
 
 # a function that hands player movement
-def play(player_attributes=[None, 50, 50, 5, 0, 5, 0, 1], map_id=0):
+def play(player_attributes=[None, 0, 1, 20, 50, 50, 10, 5, None, None], map_id=0):
     if player_attributes[0] == None:
-        player_attributes[0] = input("What is your character's name? \n> ")
+        player_attributes[0] = input(f"{Colors.orange}What is your character's name? \n> ")
 
     player: Player = Player(player_attributes)
 
@@ -80,8 +83,6 @@ def play(player_attributes=[None, 50, 50, 5, 0, 5, 0, 1], map_id=0):
 
     currant_room: Room = currant_map[0][0]
     currant_room.initialise()
-
-    keyboard.add_hotkey(hotkey="F2", callback=save, args=(player, currant_map_index))
 
     prev = None
 
@@ -110,6 +111,8 @@ def play(player_attributes=[None, 50, 50, 5, 0, 5, 0, 1], map_id=0):
                 currant_map: list = next[currant_map_index]
                 print(Colors.green, "You go up the stars.") # giving feed back to player
                 currant_room, new = currant_map[0][0].initialise() # the starting room is always in the top right corner
+
+                save(player=player, index=currant_map_index)
             # the final map
             except IndexError:
                 print(Colors.green + "You escaped")
@@ -147,24 +150,41 @@ def ask_tutorial():
     play()
 
 def start():
-    df = pandas.read_csv('save.csv')
-    num_lines = df.shape[0]
+    try:
+        with open("save.dat", "rb") as loading:
+            loaded = pickle.load(loading)
 
-    if num_lines > 0:
-        print(df)
-        load_chose = get_accept(output="Do you want to load from a save? (y/n) \n> ")
+    except EOFError:
+        with open("save.dat", "wb") as loading:
+            pickle.dump([], loading)
+            loaded = []
 
-        if load_chose:
-            index = get_int("Which save do you want?\n> ", vaid_range=[0, num_lines])
 
-            with open("save.csv", "r+") as load:
+    print("""
 
-                reader_obj = list(csv.reader(load))
-                
-                attributes = reader_obj[index+1]
-                map_load = attributes.pop()
 
-            play(player_attributes=attributes, map_id=int(map_load))
+.--------------------------------------------------------------.
+|||   / |  / /                                                 |
+|||  /  | / /  ___     //  ___      ___      _   __      ___   |
+||| / /||/ / //___) ) // //   ) ) //   ) ) // ) )  ) ) //___) )|
+|||/ / |  / //       // //       //   / / // / /  / / //       |
+||  /  | / ((____   // ((____   ((___/ / // / /  / / ((____    |
+'--------------------------------------------------------------'
+
+      
+""")
+
+    if len(loaded) > 0:
+        print(loaded)
+
+        if get_accept(output="Do you want to load from a save? (y/n) \n> "):
+            index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
+
+            attributes = loaded[index]
+
+            map_load = attributes.pop()
+
+            play(player_attributes=attributes, map_id=int(map_load)-1)
 
 
         else:
@@ -172,6 +192,8 @@ def start():
 
     else:
         ask_tutorial()
+
+
 
 def main():
     if __name__ == "__main__":

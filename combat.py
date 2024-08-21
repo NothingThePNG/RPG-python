@@ -64,12 +64,8 @@ def run_combat(hostiles, currant_room, player):
                 if type(action) == int:
                     # displaying the players hit 
                     print(Colors.blue, end="")
-                    xp = player.attack(hit=action)
+                    player.attack(hit=action)
                     player_turn_fin = True
-
-                    if xp > 0:
-                        print(f"{player} got {xp}xp")
-                        print(f"{player} now has {player.xp}xp")
         
         if len(hostiles) > 0:
             # contiguously displaying the enemies so the player dose not have to remember 
