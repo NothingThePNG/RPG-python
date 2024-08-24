@@ -106,13 +106,18 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
         inp: the inputed string so if you want the fisert time to be unice you can have your own input and have this to cheek it and display somthing else as other inputs if it was wrrong 
         want_lower: if true it will make the inputed string lower case so it is not case sensative
   """
-  inp = input(output).strip().upper()
-  while inp not in acceptable:
-    print(invalid)
-    inp = input(output).strip()
-    if want_lower:
+  inp = input(output)
+  inp = inp.upper()
+  inp = inp.strip()
+
+  while not (inp in acceptable):
+      print(invalid)
+      inp = input(output)
       inp = inp.upper()
-  return inp[0]
+      inp = inp.strip()
+  
+  inp = inp[0]
+  return inp
 
 def get_accept(output="Do you want to continue (y/n): ", inp="___ ", conform=["y"], deny=["n"], want_lower=True):
   """

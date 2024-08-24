@@ -1,7 +1,7 @@
 from classes import *
 
-enim = {"rat": ["rat", 15, 5, 0, 3, 4], "spider": ["spider", 5, 10, 0, 3, 2], 
-        "wisdom rat": ["wisdom rat", 2, 1, 4, 0, 40]}
+enim = {"rat": ["rat", 15, 5, 0, 3, 4, 1], "spider": ["spider", 5, 10, 0, 3, 2, 0], 
+        "wisdom rat": ["wisdom rat", 2, 1, 4, 0, 40, 2]}
 
 # telling the Room classes the adjacent rooms
 def make_map(new_map) -> Room:
@@ -39,10 +39,10 @@ def make_map(new_map) -> Room:
 
 # the staring map
 map1 = make_map(new_map=[
-    [Room(), Room(), None,],
-    [None, Room(hostiles=[Creature(attributes=enim["rat"])]), Room(),],
-    [Room(hostiles=[Creature(attributes=enim["spider"]), Creature(attributes=enim["spider"])]), Room(), Room(),],
-    [Room(uniq="next"), None, Room(hostiles=[Creature(attributes=enim["wisdom rat"])]),],
+    [Room(), None, Room(hostiles=[Creature(attributes=enim["wisdom rat"], items=[["rusty armor", "A", 1]])]),],
+    [Room(hostiles=[Creature(attributes=enim["rat"])]), Room(),Room()],
+    [Room(), Room(), Room(),],
+    [Room(uniq="next", hostiles=[Creature(attributes=enim["spider"]), Creature(attributes=enim["spider"])]), None, Room(items=[["small hammer", "W", 1, 2]]),],
 ])
 
 map2 = make_map(new_map=[

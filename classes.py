@@ -17,22 +17,25 @@ class Colors:
     green="\033[32m"
 
 class Creature:
-    def __init__(self, attributes) -> None:
+    def __init__(self, attributes, items=[]) -> None:
         self.name: str = attributes[0]
         self.health: int = attributes[1]
         self.max_health: int = attributes[1]
         self.damage: int = attributes[2]
-        self.armor: int = attributes[3]
+        self.armor_rating: int = attributes[3]
         self.regen: int = attributes[4]
         self.enemys: list[Creature] = []
 
         self.xp = attributes[5]
         self.level = 1
 
-        self.items: list = []
+        self.anti_armor = attributes[6]
+
+        self.items: list = items
     
-    def hurt(self, damage: int, attacker) -> bool:
-        self.health -= max((damage - self.armor), 0)
+    def hurt(self, damage: int, attacker, anti_armor=0) -> bool:
+        damage = max((damage / max(self.armor_rating - anti_armor, 1)), 1)
+        self.health -= damage
 
         print(f"{attacker} attacked {self} for {damage} damage")
         print(f"{self} has {self.health}HP\n")
@@ -42,7 +45,7 @@ class Creature:
 
         if self.health <= 0:
             attacker.xp += self.xp
-            print(f"{attacker} got {self.xp}xp")
+            print(f"{attacker} ({attacker.health}HP) got {self.xp}xp")
             print(f"{attacker} now has {attacker.xp}xp")
 
             if len(self.items) > 0:
@@ -53,10 +56,13 @@ class Creature:
         return False
 
     # attacking 
-    def attack(self, hit) -> None:
+    def attack(self, hit, damage=None) -> None:
         # if there is no enemys in it's list
         if len(self.enemys) <= 0:
             return 
+        
+        if damage == None:
+            damage = self.damage
         
         # if there was a specific creature to be attacked it will run on them else it will chose a random
         if hit == None:
@@ -65,7 +71,7 @@ class Creature:
             enemy: Creature = self.enemys[hit]
 
         # hurting the enemy and printing the result 
-        if enemy.hurt(self.damage, self):
+        if enemy.hurt(damage, self):
             self.enemys.remove(enemy)
 
     def __str__(self) -> str:
@@ -89,10 +95,19 @@ class Player(Creature):
 
         self.enemys: list[Creature] = []
 
-        self.items: list = []
+        self.items: list = [["rusty sword", "W", 5, 0]]
 
         self.armor = attributes[7]
         self.weapon = attributes[8]
+        self.anti_armor = 0
+        self.armor_rating = 0
+
+        if self.weapon != None:
+            self.damage += self.weapon[2]
+            self.anti_armor = self.weapon[3]
+
+        if self.armor != None:
+            self.armor_rating += self.armor[2]
 
     def heal(self, regen=0) -> None:
         if regen == 0:
@@ -123,14 +138,18 @@ class Player(Creature):
         self.level += 1
 
     def whirl_strike(self):
-        for enemy in self.enemys:
-            enemy.hurt(damage=int(self.damage/3), attacker=self)
+        for enemy in range(len(self.enemys)):
+            self.attack(hit=enemy, damage=max(int(self.damage/3), 1))
 
-            if enemy.health <= 0:
-                print(f"{enemy} has died to {self}")
-                self.xp += enemy.xp
-                self.enemys.remove(enemy)
-                return enemy.xp
+    def e_armour(self, armor):
+        self.armor = armor
+        self.armor_rating = armor[2]
+
+    def e_weapon(self, weapon):
+        self.weapon = weapon
+
+        self.damage += self.weapon[2]
+        self.anti_armor = self.weapon[3]
 
 
 class Room:
@@ -144,7 +163,7 @@ class Room:
         self.left = None
         self.up = None
         self.down = None
-        self.posable_direction = []
+        self.posable_direction = ["I"]
 
         # room info
         self.description = description

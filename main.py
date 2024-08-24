@@ -4,10 +4,12 @@ from classes import *
 from levels import *
 from combat import *
 from maps import *
-import pandas
 import pickle
 
+
 os.system("cls")
+
+    
 
 def tutorial():
     print(Colors.purple)
@@ -59,20 +61,104 @@ H: Heal
     print("\n")
 
 
+
+
+def equip(player: Player, num: int):
+    if num-1 < len(player.items) and num-1 >= 0:
+        item = player.items.pop(num-1)
+
+        if item[1] == "A":
+            player.items.append(player.armor)
+            player.e_armour(armor=item)
+
+            print(f"Equipped {player.armor[0]}\n\n")
+
+        if item[1] == "W":
+            player.items.append(player.weapon)
+            player.e_weapon(weapon=item)
+
+            print(f"Equipped {player.weapon[0]}\n\n")
+    
+    else:
+        print("Invalid number")
+
+
+def drop(player: Player, num: int) -> None:
+    if num-1 < len(player.items) and num-1 >= 0:
+
+        print(f"Dropped {player.items[num-1]}")
+        del player.items[num-1]
+    
+    else:
+        print("Invalid number")
+
+
+def display_item(player: Player):
+    for i in range(len(player.items)):
+        item = player.items[i]
+
+        if item == None:
+            continue
+
+        if item[1] == "A":
+            print(f"{i+1} - {item[0]} will give +{item[2]} armor")
+
+        elif item[1] == "W":
+            print(f"{i+1} - {item[0]} with a extra {item[2]} damage and {item[3]}")
+
+
+def inventory(player: Player) -> None:
+    os.system("cls")
+    if player.armor != None:
+        print(f"Equipped armor {player.armor[0]}")
+    else:
+        print("No armor")
+
+    if player.weapon != None:
+        print(f"Equipped armor {player.weapon[0]}")
+    else:
+        print("No weapon")
+
+    display_item(player=player)
+
+    print()
+
+    action = input("Do you want to \n  -  L: leave\n  -  E [num]: equip\n  - D [num]: drop \n> ").strip().upper().split()
+    
+    while action != ["L"]:
+        os.system("cls")
+
+        if len(action) == 2:
+            if action[0] == "E" and action[1].isdigit():
+                equip(player=player, num=int(action[1]))
+
+            elif action[0] == "D" and action[1].isdigit():
+                drop(player=player, num=int(action[1]))
+
+            else:
+                print("invalid input\n")
+
+        display_item(player=player)
+
+        action = input("Do you want to \n  -  L: leave\n  -  E: equip\n  - D: drop \n> ").strip().upper().split()
+
+
+
+
 def save(player, index):
     # xp, level, health, max_health, regen, damage, armour, map_index
 
-    with open("save.dat", "rb") as read:
+    with open("_internal/save.dat", "rb") as read:
         data = pickle.load(read)
 
     data.append([player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage, player.armor, player.weapon, index+1])
 
-    with open("save.dat", "wb", newline ='') as save:
+    with open("_internal/save.dat", "wb", newline ='') as save:
         pickle.dump(data, save)
 
 
 # a function that hands player movement
-def play(player_attributes=[None, 0, 1, 20, 50, 50, 10, 5, None, None], map_id=0):
+def play(player_attributes=[None, 0, 1, 50, 50, 10, 5, None, None], map_id=0):
     if player_attributes[0] == None:
         player_attributes[0] = input(f"{Colors.orange}What is your character's name? \n> ")
 
@@ -85,6 +171,7 @@ def play(player_attributes=[None, 0, 1, 20, 50, 50, 10, 5, None, None], map_id=0
     currant_room.initialise()
 
     prev = None
+    new = True
 
     while currant_room.uniq != "exit": # intl the player reaches the exit
 
@@ -94,11 +181,13 @@ def play(player_attributes=[None, 0, 1, 20, 50, 50, 10, 5, None, None], map_id=0
 
         while player.xp >= player.xp_need:
             player.level_up()
+
+        posable_direction = currant_room.posable_direction
         
         # using the list of posable path ways to get a input as to which the player will move
         dire: str = get_val_str(
             output=f"{Colors.orange}Where do you want to go? ({', '.join(currant_room.posable_direction)}) ",
-            acceptable=currant_room.posable_direction
+            acceptable=posable_direction
         )
 
         # going to the next map
@@ -117,8 +206,10 @@ def play(player_attributes=[None, 0, 1, 20, 50, 50, 10, 5, None, None], map_id=0
             except IndexError:
                 print(Colors.green + "You escaped")
 
+        elif dire == "I":
+            inventory(player)
+            continue
         
-                
             
         # moving to the next room
         else:
@@ -151,11 +242,11 @@ def ask_tutorial():
 
 def start():
     try:
-        with open("save.dat", "rb") as loading:
+        with open("_internal/save.dat", "rb") as loading:
             loaded = pickle.load(loading)
 
     except EOFError:
-        with open("save.dat", "wb") as loading:
+        with open("_internal/save.dat", "wb") as loading:
             pickle.dump([], loading)
             loaded = []
 
@@ -198,5 +289,6 @@ def start():
 def main():
     if __name__ == "__main__":
         start()
+
 
 main()
