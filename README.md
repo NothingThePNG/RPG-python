@@ -9,4 +9,6 @@ I'm plaing on it being a game with a difind map but I will try to get AI, spasif
 
 Curretly I have only implamted a very basic combat system 2 very small maps with the abbility to bove between rooms and llama2 making dicriptions of rooms.
 
-Reacently added leveling up and a save system
+Reacently added leveling up and a save system along side a invetroy and uppdated the toutoreal
+
+planing on adding a action point system
