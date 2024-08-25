@@ -1,6 +1,7 @@
 from random import *
 from get_type import *
 #import ollama
+import os
 
 
 def clamp(number, minn, maxn):
@@ -95,10 +96,10 @@ class Player(Creature):
 
         self.enemys: list[Creature] = []
 
-        self.items: list = [["rusty sword", "W", 5, 0]]
+        self.items: list = attributes[7]
 
-        self.armor = attributes[7]
-        self.weapon = attributes[8]
+        self.armor = attributes[8]
+        self.weapon = attributes[9]
         self.anti_armor = 0
         self.armor_rating = 0
 
@@ -177,6 +178,8 @@ class Room:
     
     def initialise(self):
         self.has_player = True
+
+        os.system("cls")
 
         if not self.discoverd:
             # ollama.chat(self.description)

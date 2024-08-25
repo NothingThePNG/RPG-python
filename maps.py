@@ -73,7 +73,6 @@ def get_lines(currant_map: list, line_index: int) -> str:
 
 # a function that prints each line of the map
 def draw_map(current_map):
-    os.system("cls")
     print(Colors.purple, end="")
 
     for y in range(len(current_map)):

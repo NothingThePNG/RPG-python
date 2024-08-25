@@ -23,8 +23,9 @@ def tutorial():
     print("When you go up a floor you will not be able to go back down so make sure you're done exploring")
     print("\nThere is also lines ie (- |) witch show the directions you can move")
     print("To move you will have a prompt such as")
-    print("         Where do you want to go? (W, D)")
+    print("         Where do you want to go? (I, W, D)")
     print("The game uses W A S and D so this means you can go up or right in the example")
+    print("(The I will be covered in inventory)")
     print("\n\n-------------------Combat------------------")
     print("In combat you will see some thing like:")
     print(f"""{Colors.red}
@@ -58,6 +59,14 @@ H: Heal
     print("The game will only save at the start of levels")
     print("You load a save by reopening the game where you will be promoted to load a save")
     print("You can chose not to and make a new game or chose to where you will need to input the index of the wanted save")
+    print("\n\n-------------------inventory-------------------")
+    print("While you are waling you will notice the option (I)")
+    print("This is to access your inventory")
+    print("In your inventory you will be shown")
+    print("\nThen you can enter L to leave and start moving agin")
+    print("or you can equip or drop a item")
+    print("\nIn order to drop or equip you will need to type e or d then the index of the item to drop")
+    print("(If you drop a item you will not get it back)")
     print("\n")
 
 
@@ -65,16 +74,18 @@ H: Heal
 
 def equip(player: Player, num: int):
     if num-1 < len(player.items) and num-1 >= 0:
-        item = player.items.pop(num-1)
+        item = player.items.pop((num-1))
 
         if item[1] == "A":
-            player.items.append(player.armor)
+            if player.armor != None:
+                player.items.append(player.armor)
             player.e_armour(armor=item)
 
             print(f"Equipped {player.armor[0]}\n\n")
 
         if item[1] == "W":
-            player.items.append(player.weapon)
+            if player.weapon != None:
+                player.items.append(player.weapon)
             player.e_weapon(weapon=item)
 
             print(f"Equipped {player.weapon[0]}\n\n")
@@ -94,36 +105,46 @@ def drop(player: Player, num: int) -> None:
 
 
 def display_item(player: Player):
-    for i in range(len(player.items)):
-        item = player.items[i]
+    print(Colors.blue, end="")
 
-        if item == None:
-            continue
+    print(player.items)
 
-        if item[1] == "A":
-            print(f"{i+1} - {item[0]} will give +{item[2]} armor")
-
-        elif item[1] == "W":
-            print(f"{i+1} - {item[0]} with a extra {item[2]} damage and {item[3]}")
-
-
-def inventory(player: Player) -> None:
-    os.system("cls")
     if player.armor != None:
-        print(f"Equipped armor {player.armor[0]}")
+        print(f"Equipped armor: {player.armor[0]}")
     else:
         print("No armor")
 
     if player.weapon != None:
-        print(f"Equipped armor {player.weapon[0]}")
+        print(f"Equipped weapon: {player.weapon[0]}")
     else:
         print("No weapon")
+
+
+    for i in range(len(player.items)):
+        item = player.items[i]
+
+        if item == None:
+            print("None")
+
+        elif item[1] == "A":
+            print(f"{i+1} - {item[0]} will give +{item[2]} armor")
+
+        elif item[1] == "W":
+            print(f"{i+1} - {item[0]} with a extra {item[2]} damage and {item[3]}")
+    
+    if len(player.items) <= 0:
+        print("You don't have any items")
+
+
+
+def inventory(player: Player) -> None:
+    os.system("cls")
 
     display_item(player=player)
 
     print()
 
-    action = input("Do you want to \n  -  L: leave\n  -  E [num]: equip\n  - D [num]: drop \n> ").strip().upper().split()
+    action = input(f"{Colors.orange}Do you want to \n  -  L: leave\n  -  E [num]: equip\n  - D [num]: drop \n> ").strip().upper().split()
     
     while action != ["L"]:
         os.system("cls")
@@ -142,6 +163,8 @@ def inventory(player: Player) -> None:
 
         action = input("Do you want to \n  -  L: leave\n  -  E: equip\n  - D: drop \n> ").strip().upper().split()
 
+    os.system("cls")
+
 
 
 
@@ -151,14 +174,14 @@ def save(player, index):
     with open("_internal/save.dat", "rb") as read:
         data = pickle.load(read)
 
-    data.append([player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage, player.armor, player.weapon, index+1])
+    data.append([player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage, player.items, player.armor, player.weapon, index+1])
 
     with open("_internal/save.dat", "wb", newline ='') as save:
         pickle.dump(data, save)
 
 
 # a function that hands player movement
-def play(player_attributes=[None, 0, 1, 50, 50, 10, 5, None, None], map_id=0):
+def play(player_attributes=[None, 0, 1, 50, 50, 10, 5, [["rusty nail", "W", 2, 0]], None, None], map_id=0):
     if player_attributes[0] == None:
         player_attributes[0] = input(f"{Colors.orange}What is your character's name? \n> ")
 
@@ -189,6 +212,8 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 5, None, None], map_id=0):
             output=f"{Colors.orange}Where do you want to go? ({', '.join(currant_room.posable_direction)}) ",
             acceptable=posable_direction
         )
+
+        os.system("cls")
 
         # going to the next map
         if dire == "N":
@@ -227,6 +252,11 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 5, None, None], map_id=0):
             if run:
                 currant_room.has_player = False
                 currant_room, new = prev.initialise()
+
+        if len(currant_room.items) > 0:
+            for i in currant_room.items:
+                player.items.append(i)
+                print(f"You picked up {i[0]}")
     
     os.system("cls")
 

@@ -40,8 +40,8 @@ def make_map(new_map) -> Room:
 # the staring map
 map1 = make_map(new_map=[
     [Room(), None, Room(hostiles=[Creature(attributes=enim["wisdom rat"], items=[["rusty armor", "A", 1]])]),],
-    [Room(hostiles=[Creature(attributes=enim["rat"])]), Room(),Room()],
-    [Room(), Room(), Room(),],
+    [Room(), Room(),Room()],
+    [Room(), None, Room(),],
     [Room(uniq="next", hostiles=[Creature(attributes=enim["spider"]), Creature(attributes=enim["spider"])]), None, Room(items=[["small hammer", "W", 1, 2]]),],
 ])
 
