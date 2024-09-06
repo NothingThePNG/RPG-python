@@ -1,6 +1,7 @@
 from time import sleep
 from classes import Colors
 from get_type import *
+import os
 
 def _start_combat(hostiles, player):
     # telling the player what is fighting them
@@ -31,15 +32,13 @@ def run_combat(hostiles, currant_room, player):
             sleep(.5)
         player_turn_fin = False
         while not player_turn_fin:
-            action = input(f"{Colors.orange}What action do you want to take?\nH: Heal\nW: Whirl strike\n[any]: attack\n").strip().lower()
+
+            action = input(f"{Colors.orange}What action do you want to take?\nW: Whirl strike\n[any]: attack\n > {Colors.blue}").strip().lower()
             # running the action the player wants
             if len(action) <= 0:
                 print("Invalid: need a input")
                 pass
-            elif action[0] == "h":
-                print(Colors.blue, end="")
-                player.heal()
-                player_turn_fin = True
+
             elif action[0] == "w":
                 print(Colors.blue)
                 player.whirl_strike()
@@ -81,4 +80,5 @@ def run_combat(hostiles, currant_room, player):
     while not get_accept():
         print("ok")
     
+    os.system("cls")
     return False

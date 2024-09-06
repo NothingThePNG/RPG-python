@@ -1,7 +1,5 @@
 from random import *
 from get_type import *
-#import ollama
-import os
 
 
 def clamp(number, minn, maxn):
@@ -38,15 +36,15 @@ class Creature:
         damage = max((damage / max(self.armor_rating - anti_armor, 1)), 1)
         self.health -= damage
 
-        print(f"{attacker} attacked {self} for {damage} damage")
-        print(f"{self} has {self.health}HP\n")
+        print(f"{attacker} attacked {self} for {round(damage, 3)} damage")
+        print(f"{self} has {round(self.health, 3)}HP\n")
 
         if attacker not in self.enemys:
             self.enemys.append(attacker)
 
         if self.health <= 0:
             attacker.xp += self.xp
-            print(f"{attacker} ({attacker.health}HP) got {self.xp}xp")
+            print(f"{attacker} ({round((attacker.health), 3)}HP) got {self.xp}xp")
             print(f"{attacker} now has {attacker.xp}xp")
 
             if len(self.items) > 0:
@@ -85,14 +83,13 @@ class Player(Creature):
 
         self.xp: int = int(attributes[1])
         self.level: int = int(attributes[2])
-        self.xp_need: int = 20
-        for i in range(self.level-1):
-            self.xp_need += 5
+        self.xp_need: int = 20 + (5 * self.level)
 
         self.health: int = int(attributes[3])
         self.max_health: int = int(attributes[4])
         self.regen: int = int(attributes[5])
-        self.damage: int = int(attributes[6])
+        self.damage_multi: float = float(attributes[6])
+        self.damage: int = 5
 
         self.enemys: list[Creature] = []
 
@@ -101,11 +98,14 @@ class Player(Creature):
         self.armor = attributes[8]
         self.weapon = attributes[9]
         self.anti_armor = 0
-        self.armor_rating = 0
+        self.armor_rating = 1
 
         if self.weapon != None:
-            self.damage += self.weapon[2]
+            self.damage += self.weapon[2] 
+            self.damage = round(number=(self.damage * self.damage_multi), ndigits=3)
             self.anti_armor = self.weapon[3]
+        else: 
+            self.damage = self.damage * self.damage_multi
 
         if self.armor != None:
             self.armor_rating += self.armor[2]
@@ -121,18 +121,20 @@ class Player(Creature):
         print(f"{self} has {self.health}HP")
     
     def level_up(self):
-        stat = get_val_str(output=f"""Do you want to upgrade:
+        stat = get_val_str(output=f"""{Colors.orange}Do you want to upgrade:
     R: regen {self.regen} -> {self.regen + 5}
     M: max health {self.max_health} -> {self.max_health + 10}
-    S: strength {self.damage} -> {self.damage + 5}
-> """, acceptable=["R", "M", "S"])
+    S: strength X{self.damage_multi} -> X{round((self.damage_multi + 0.1), 3)}
+>{Colors.blue} """, acceptable=["R", "M", "S"])
 
         if stat == "R":
             self.regen += 5
         elif stat == "M":
             self.max_health += 10
         elif stat == "S":
-            self.damage += 5
+            self.damage_multi += 0.1
+            self.damage = round(number=((5 + self.weapon[2]) * self.damage_multi), ndigits=3)
+
         
         self.xp -= self.xp_need
         self.xp_need += 5
@@ -149,16 +151,18 @@ class Player(Creature):
     def e_weapon(self, weapon):
         self.weapon = weapon
 
-        self.damage += self.weapon[2]
+        self.damage += self.weapon[2] 
+        self.damage = self.damage * self.damage_multi
         self.anti_armor = self.weapon[3]
 
 
 class Room:
     # all attributes the room will need
-    def __init__(self, description="A barron room made of stone", 
+    def __init__(self,
                  hostiles=[], 
                  uniq=None,
                  items=[])-> None:
+        
         # all adjacent rooms that the player can move to
         self.right = None
         self.left = None
@@ -167,52 +171,13 @@ class Room:
         self.posable_direction = ["I"]
 
         # room info
-        self.description = description
         self.hostiles: list[Creature] = hostiles
         self.uniq = uniq
         self.items = items
 
         # map info
-        self.discoverd = False
         self.has_player = False
     
-    def initialise(self):
-        self.has_player = True
-
-        os.system("cls")
-
-        if not self.discoverd:
-            # ollama.chat(self.description)
-
-            self.discoverd = True
-
-            print(Colors.purple, end="")
-
-            prompt: str = f"Wight a DnD stile description (and only a description of the room) for a {self.description}"
-
-            if self.uniq == "dark":
-                prompt = "room to dark to see anything"
-            else:
-                if len(self.hostiles) > 0:
-                    prompt += f"a there are hostiles consisting of {self.hostiles}"
-                
-                prompt += f"with doors leading off ({", ".join(self.posable_direction)})"
-
-            
-            # stream = ollama.chat(
-            #     model="llama2",
-            #     messages=[{
-            #         "role": "user",
-            #         "content": prompt
-            #     }],
-            #     stream=True
-            # )
-            # for chunk in stream:
-            #     sys.stdout.write(chunk["message"]["content"])
-            #     sys.stdout.flush()
-        
-            return self, True
-        return self, False
     
     # making the player move
     def move(self, direction):

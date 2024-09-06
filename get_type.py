@@ -1,3 +1,66 @@
+class _Getch:
+    """Gets a single character from standard input.  Does not echo to the
+screen."""
+    def __init__(self):
+        try:
+            self.impl = _GetchWindows()
+        except ImportError:
+            try:
+              self.impl = _GetchUnix()
+            except ImportError:
+                self.impl = _GetchMacCarbon()
+
+    def __call__(self): return self.impl()
+
+
+class _GetchUnix:
+    def __init__(self):
+        import tty, sys, termios 
+
+    def __call__(self):
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+class _GetchWindows:
+    def __init__(self):
+        import msvcrt
+
+    def __call__(self):
+        import msvcrt
+        return msvcrt.getch().decode()
+
+
+class _GetchMacCarbon:
+    def __init__(self):
+        import Carbon
+
+    def __call__(self):
+        import Carbon
+        if Carbon.Evt.EventAvail(0x0008)[0]==0: # 0x0008 is the keyDownMask
+            return ''
+        else:
+            #
+            # The event contains the following info:
+            # (what,msg,when,where,mod)=Carbon.Evt.GetNextEvent(0x0008)[1]
+            #
+            # The message (msg) contains the ASCII char which is
+            # extracted with the 0x000000FF charCodeMask; this
+            # number is converted to an ASCII character with chr() and
+            # returned
+            #
+            (what,msg,when,where,mod)=Carbon.Evt.GetNextEvent(0x0008)[1]
+            return chr(msg)
+
+getch = _Getch()
+
+
 def get_int(output="Not a num: ", num="a", first_out=1, vaid_range=None, range_out="Not in range: "):
   '''
   This is a funtion to get integers with a output, and a optional number.
@@ -106,20 +169,24 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
         inp: the inputed string so if you want the fisert time to be unice you can have your own input and have this to cheek it and display somthing else as other inputs if it was wrrong 
         want_lower: if true it will make the inputed string lower case so it is not case sensative
   """
-  inp = input(output)
+
+  print(output)
+  inp = getch()
   inp = inp.upper()
-  inp = inp.strip()
 
   while not (inp in acceptable):
-      print(invalid)
-      inp = input(output)
+      print(inp, acceptable)
+
+      print(output)
+      
+      inp = getch()
       inp = inp.upper()
       inp = inp.strip()
   
   inp = inp[0]
   return inp
 
-def get_accept(output="Do you want to continue (y/n): ", inp="___ ", conform=["y"], deny=["n"], want_lower=True):
+def get_accept(output="Do you want to continue (y/n): ", inp=None, conform=["y"], deny=["n"], want_lower=True):
   """
   This funtion takes 2 list's of acceptable and not acceptable inputs and will return a Ture if it is in the list of acceptable inputs and a False if it is in the list of not acceptable inputs
   
@@ -149,9 +216,9 @@ def get_accept(output="Do you want to continue (y/n): ", inp="___ ", conform=["y
     conform = [i.strip() for i in conform]
     deny = [i.strip() for i in deny]
 
-  inp = inp.strip()
   while inp not in conform and inp not in deny:
-    inp = input(output).strip()
+    print(output)
+    inp = getch()
     if want_lower:
       inp = inp.lower()
   return (inp in conform)
