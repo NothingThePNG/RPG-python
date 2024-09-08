@@ -1,23 +1,36 @@
 from classes import *
 
-hight = 25
-width = 20
+hight = 20
+width = 40
 
 def _start_level():
-    builder ={
+    builder = {
     "room count": 600,
     "padding": 1,
     "x": int(width // 2),
     "y": int(hight // 2),
-    "exit": 2,
     }
 
     level = [[None] * width for i in range(hight)]
 
     return builder, level
 
-enim_level_1 = [["rat", 6, 5, 0, 3, 4, 1], ["spider", 5, 10, 0, 3, 2, 0], 
+enem_level_1 = [["rat", 6, 3, 0, 3, 4, 1], ["baby spider", 1, 6, 0, 3, 2, 0], 
         ["wisdom rat", 2, 1, 4, 0, 40, 2]]
+
+items_level_1 = [["hollow log", "A", 2]]
+
+def _make_enemys(player: Player):
+    if player.level <= 5:
+        enem = enem_level_1
+    
+    ret = []
+
+    for i in range(randint(1, 3)):
+        enemy = Creature(choice(enem))
+        ret.append(enemy)
+
+    return ret
 
 # telling the Room classes the adjacent rooms
 def _make_map(new_map) -> Room:
@@ -46,17 +59,11 @@ def _make_map(new_map) -> Room:
                     new_map[y][x].up = new_map[y-1][x]
                     new_map[y][x].posable_direction.append("W")
 
-            if new_map[y][x].uniq == "next":
-                new_map[y][x].posable_direction.append("N")
-
-            elif new_map[y][x].uniq == "heal":
-                new_map[y][x].posable_direction.append("H")
-
     
     # the first room is always the top left
     return new_map
 
-def make_level():
+def make_level(player: Player):
     the_builder, new_level = _start_level() 
 
     while the_builder["room count"] > 0:
@@ -65,6 +72,11 @@ def make_level():
 
         if new_level[y][x] == None:
             new_room = Room()
+            change_room = randint(0, 30)
+            if change_room == 0:
+                new_room.uniq = "heal"
+            elif change_room > 28:
+                new_room.hostiles = _make_enemys(player=player)
             new_level[y][x] = new_room
         the_builder["room count"] -= 1
 
@@ -92,7 +104,7 @@ def make_level():
         else:
             the_builder["y"] += 1
     
-    if the_builder["exit"] > 0:
-        new_level[the_builder["y"]][the_builder["x"]] = Room(uniq="next")
+    
+    new_level[the_builder["y"]][the_builder["x"]] = Room(uniq="next")
         
     return _make_map(new_map=new_level)

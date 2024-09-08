@@ -4,22 +4,23 @@ from classes import *
 from levels import *
 from combat import *
 from maps import *
+import rich.console
 import pickle, keyboard, os
 
-#keyboard.press('f11')
+#keyboard.press_and_release('f11')
 
 os.system("cls")
 
 def stop_program():
     keyboard.press_and_release("ctrl + c")
 
-keyboard.add_hotkey("F3", stop_program)
+keyboard.add_hotkey("F12", stop_program)
     
 
 def tutorial():
     print(Colors.purple)
     print("\n\n-------------------Controls------------------")
-    print(" F3 - quit")
+    print(" F12 - quit")
     print(" W,A,S,D - move")
     print(" I - inventory")
     print(" E [number] - equip item at selected index")
@@ -31,6 +32,8 @@ def tutorial():
     print("     -     # wall")
     print("     -     @ for the current room")
     print("     -     N for the room that takes you to the next map")
+    print("     -     ⌂ healing space (H to heal but they are a one time use)")
+    print("     -     H hostiles they will attack you")
     print("There is only one N room per map and if you are in one there will be no @ on the map only the N")
     print("When you go up a floor you will not be able to go back down so make sure you're done exploring")
     print("\nThere is also lines ie (- |) witch show the directions you can move")
@@ -191,7 +194,7 @@ def inventory(player: Player) -> None:
 
 
 def stats(player: Player):
-    print(f"Damage: {round(player.damage, 3)}, Health: {player.health}")
+    print(f"Damage: {round(player.damage, 3)}, Health: {player.health}/{player.max_health}")
     print(f"Armor: {player.armor_rating}, Anti-armor: {player.anti_armor}")
     print(f"Level: {player.level}")
     print(f"{player} has {player.xp}/{player.xp_need}xp")
@@ -199,7 +202,7 @@ def stats(player: Player):
 
 
 def save(player, savepoint=0):
-    # xp, level, health, max_health, regen, damage, armour
+    # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
 
     with open("_internal/save.dat", "rb") as read:
         data = pickle.load(read)
@@ -216,14 +219,20 @@ def save(player, savepoint=0):
 # a function that hands player movement
 def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]], None, None], savepoint=0):
     os.system("cls")
+
     if player_attributes[0] == None:
         player_attributes[0] = input(f"{Colors.orange}What is your character's name?\n> {Colors.blue}")
 
     player: Player = Player(attributes=player_attributes)
 
-    currant_map: list[list] = make_level()
+    currant_map: list[list] = make_level(player=player)
 
     currant_room: Room = currant_map[hight//2][width//2]
+
+    player_cords = {
+        "x": hight//2,
+        "y": width//2,
+    }
 
     prev = currant_room
 
@@ -240,18 +249,27 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
         while player.xp >= player.xp_need:
             player.level_up() # leveling up the player
 
-        posable_direction = currant_room.posable_direction
+        
+        posable_action = ["I"]
+
+        if currant_room.uniq == "heal":
+            posable_action.append("H")
+        
+        if currant_room.uniq == "next":
+            posable_action.append("N")
+        
+        posable_action.extend(currant_room.posable_direction)
         
         # using the list of posable path ways to get a input as to which the player will move
-        dire: str = get_val_str(
-            output=f"{Colors.orange}What do you want to do? ({', '.join(currant_room.posable_direction)}) {Colors.blue}",
-            acceptable=posable_direction
+        action: str = get_val_str(
+            output=f"{Colors.orange}What do you want to do? ({', '.join(posable_action)}) {Colors.blue}",
+            acceptable=posable_action
         ) # getting the action the player wants to do
 
         os.system("cls")
 
         # going to the next map
-        if dire == "N":
+        if action == "N":
             save(player=player, savepoint=savepoint)
 
             currant_map: list[list] = make_level()
@@ -262,11 +280,16 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
 
             currant_room.has_player = True
 
-        elif dire == "I":
+            player_cords = {
+                "x": hight//2,
+                "y": width//2,
+            }
+
+        elif action == "I":
             inventory(player)
             continue
         
-        elif dire == "H":
+        elif action == "H":
             player.heal()
             currant_room.uniq = ""
             continue
@@ -276,7 +299,20 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
         else:
             prev = currant_room
             currant_room.has_player = False
-            currant_room = currant_room.move(dire) # moving rooms 
+
+            if action == "W":
+                player_cords["y"] -= 1
+                currant_room[player_cords["y"]][player_cords["x"]]
+            elif action == "D":
+                player_cords["x"] += 1
+                currant_room[player_cords["y"]][player_cords["x"]]
+            elif action == "A":
+                player_cords["x"] -= 1
+                currant_room[player_cords["y"]][player_cords["x"]]
+            elif action == "s":
+                player_cords["y"] += 1
+                currant_room[player_cords["y"]][player_cords["x"]]
+            
             currant_room.has_player = True
         
 
@@ -300,13 +336,11 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
     print(Colors.green + "You escaped the Dungeon")
     input()
 
-def ask_tutorial(lode_index=0):
+def ask_tutorial():
     tutorial_choice = get_accept(output="Do you want a tutorial? (y/n)")
 
     if tutorial_choice:
         tutorial()
-
-    play(savepoint=lode_index)
 
 def start():
     try:
@@ -334,21 +368,32 @@ def start():
 """)
 
     if len(loaded) > 0:
-        print(loaded)
+        print("0: New save")
+        
+        # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
+        for character_index in range(len(loaded)):
+            character = loaded[character_index]
+            print(f"""
+{character_index}:
+    Name: {character[0]}
+    Level: {character[2]}
+    Health: {character[3]}/{character[4]}
+""")
 
-        if get_accept(output="Do you want to load from a save? (y/n):"):
-            index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
+        index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
 
-            attributes = loaded[index]
+        if index == 0:
+            play(savepoint=len(loaded))
+        attributes = loaded[index]
 
-            play(player_attributes=attributes, savepoint=index)
+        ask_tutorial()
 
+        play(player_attributes=attributes, savepoint=index)
 
-        else:
-            ask_tutorial(lode_index=len(loaded))
 
     else:
         ask_tutorial()
+        play(savepoint=0)
 
 
 

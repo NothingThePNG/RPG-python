@@ -8,12 +8,17 @@ def clamp(number, minn, maxn):
 
 class Colors:
     reset="\033[0m"
+    revers="\u001b[7m"
+    under_line="\u001b[4m"
+    bold="\u001b[1m"
 
     orange="\033[33m"
     purple="\033[35m"
     blue="\033[34m"
     red="\033[31m"
     green="\033[32m"
+
+    back_cyan="\u001b[46;1m"
 
 class Creature:
     def __init__(self, attributes, items=[]) -> None:
@@ -33,7 +38,7 @@ class Creature:
         self.items: list = items
     
     def hurt(self, damage: int, attacker, anti_armor=0) -> bool:
-        damage = max((damage / max(self.armor_rating - anti_armor, 1)), 1)
+        damage = max((damage / max(self.armor_rating - anti_armor, 1)), 0.5)
         self.health -= damage
 
         print(f"{attacker} attacked {self} for {round(damage, 3)} damage")
@@ -164,11 +169,7 @@ class Room:
                  items=[])-> None:
         
         # all adjacent rooms that the player can move to
-        self.right = None
-        self.left = None
-        self.up = None
-        self.down = None
-        self.posable_direction = ["I"]
+        self.posable_direction = []
 
         # room info
         self.hostiles: list[Creature] = hostiles
@@ -177,17 +178,3 @@ class Room:
 
         # map info
         self.has_player = False
-    
-    
-    # making the player move
-    def move(self, direction):
-        if direction == "D":
-            return self.right
-        elif direction == "A":
-            return self.left
-        elif direction == "W":
-            return self.up
-        elif direction == "S":
-            return self.down
-        else:
-            return "error"
