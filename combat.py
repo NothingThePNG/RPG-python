@@ -1,7 +1,7 @@
 from time import sleep
-from classes import Colors
+from classes import *
 from get_type import *
-import os
+#import os
 
 def _start_combat(hostiles, player):
     # telling the player what is fighting them
@@ -21,50 +21,48 @@ def _start_combat(hostiles, player):
 
     return hostiles
 
-def run_combat(hostiles, currant_room, player):
+def run_combat(hostiles: list[Creature], currant_room: Room, player: Player):
     hostiles = _start_combat(hostiles=hostiles, player=player)
 
     while len(hostiles) > 0 and player.health > 0:
         print(Colors.red, end=" ")
+
+        attackers = []
         # getting the hostiles to attack the player
         for i in hostiles:
             i.attack(None)
             sleep(.5)
+
+            attackers.append(f"{i.name}\n       {i.health}HP")
+        
+        attackers.append("Whirl strike")
+        
+        attackers.append("Run")
+        
+        input()
+        Clear_screen()
         player_turn_fin = False
         while not player_turn_fin:
 
-            action = input(f"{Colors.orange}What action do you want to take?\nW: Whirl strike\n[any]: attack\n > {Colors.blue}").strip().lower()
-            # running the action the player wants
-            if len(action) <= 0:
-                print("Invalid: need a input")
-                pass
+            action = Select_item(f"{Colors.orange}Who do you want to attack", attackers)()
 
-            elif action[0] == "w":
-                print(Colors.blue)
-                player.whirl_strike()
-                player_turn_fin = True
-            elif action == "run":
+            # running the action the player wants
+            if action == len(attackers)-1:
                 for i in player.enemys:
                     i.enemys.remove(player)
                 return True
+            elif action == len(attackers)-2:
+                print(Colors.blue)
+                player.whirl_strike()
+                player_turn_fin = True
+
             else:
-                # getting a valid target 
-                
-                if action.isnumeric():
-                    if int(action)-1 in range(0, len(player.enemys)):
-                        action = int(action)-1
-                    else:
-                        print("Not in range.")
-                else:
-                    # attacking the first creature with the name the player inputted
-                    for i in range(len(player.enemys)):
-                        if player.enemys[i].name == action:
-                            action = i
-                if type(action) == int:
-                    # displaying the players hit 
-                    print(Colors.blue, end="")
-                    player.attack(hit=action)
-                    player_turn_fin = True
+                # displaying the players hit 
+                print(Colors.blue, end="")
+                player.attack(hit=action)
+                player_turn_fin = True
+        
+        input()
         
         if len(hostiles) > 0:
             # contiguously displaying the enemies so the player dose not have to remember 
@@ -77,8 +75,7 @@ def run_combat(hostiles, currant_room, player):
         sleep(1)
 
     currant_room.hostiles = hostiles
-    while not get_accept():
-        print("ok")
     
-    os.system("cls")
+    sleep(1)
+    
     return False

@@ -1,199 +1,122 @@
 from random import *
-from time import sleep
+from inventory import *
 from classes import *
 from levels import *
 from combat import *
 from maps import *
-import rich.console
-import pickle, keyboard, os
+import pickle, keyboard
 
-#keyboard.press_and_release('f11')
+keyboard.press_and_release('f11')
 
-os.system("cls")
+clear_screen()
 
 def stop_program():
     keyboard.press_and_release("ctrl + c")
 
 keyboard.add_hotkey("F12", stop_program)
-    
+
 
 def tutorial():
     print(Colors.purple)
-    print("\n\n-------------------Controls------------------")
-    print(" F12 - quit")
-    print(" W,A,S,D - move")
-    print(" I - inventory")
-    print(" E [number] - equip item at selected index")
-    print(" D [number] - drop item at selected index")
-    print(" [any] - the name of a enemy to attack the first enemy with that name or the number of the enemy")
-    print("-------------------Movement------------------")
-    print("You will be given a map of the currently explored areas when this stage starts")
-    print("The map will have:")
-    print("     -     # wall")
-    print("     -     @ for the current room")
-    print("     -     N for the room that takes you to the next map")
-    print("     -     ⌂ healing space (H to heal but they are a one time use)")
-    print("     -     H hostiles they will attack you")
-    print("There is only one N room per map and if you are in one there will be no @ on the map only the N")
-    print("When you go up a floor you will not be able to go back down so make sure you're done exploring")
-    print("\nThere is also lines ie (- |) witch show the directions you can move")
-    print("To move you will have a prompt such as")
-    print("         Where do you want to go? (I, W, D)")
-    print("The game uses W A S and D so this means you can go up or right in the example")
-    print("(The I will be covered in inventory)")
-    print("\n\n-------------------Combat------------------")
-    print("In combat you will see some thing like:")
-    print(f"""{Colors.red}
- You are attacked by:
-1    -   rat 10HP    
-2    -   spider 5HP  
-{Colors.purple}
-""")
-    print("You can then heal buy imputing H")
-    print("Or attack by typing: ")
-    print("     -     the name of the enemy (it will attack the first enemy with that name)")
-    print("     -     type the number of the enemy to attack a specific one (as enemys die the numbers will change)")
-    print("The input prompt will loo like:")
-    print(f"""{Colors.orange}
-What action do you want to take?
-H: Heal
-[any]: attack
-{Colors.purple}""")
-    print("There is also a armor stat")
-    print("It's very simple the damage will be divided ageist the armor")
-    print("eg a 10HP attack ageist something with 2 armor will be 5 damage dealt")
-    print("There are 2 factors weapons effect damage and armor penetration")
+    learn = 1
+    while learn != 0:
+        learn = Select_item("What topic do you want to know about", 
+                            ["Exit", "Controls", "Movement", "Combat", "Colors", "Save/Load", "Inventory", "Leveling up"])()
+        clear_screen()
+        print(Colors.purple)
+        if learn == 1:
+            print("\n\n-------------------Controls------------------")
+            print(" F12 - quit")
+            print(" W,A,S,D - move")
+            print(" I - inventory")
+            print(" E [number] - equip item at selected index")
+            print(" D [number] - drop item at selected index")
+            print(" [any] - the name of a enemy to attack the first enemy with that name or the number of the enemy")
+            input()
+        elif learn == 2:
+            print("-------------------Movement------------------")
+            print("You will be given a map of the currently explored areas when this stage starts")
+            print("The map will have:")
+            print("     -     ^ wall")
+            print("     -     @ for the current room")
+            print("     -     N for the room that takes you to the next map")
+            print("     -     ⌂ healing space (H to heal but they are a one time use)")
+            print("     -     H hostiles they will attack you")
+            print("There is only one N room per map and if you are in one there will be no @ on the map only the N")
+            print("When you go up a floor you will not be able to go back down so make sure you're done exploring")
+            print("\nThere is also lines ie (- |) witch show the directions you can move")
+            print("To move you will have a prompt such as")
+            print("         Where do you want to go? (I, W, D)")
+            print("The game uses W A S and D so this means you can go up or right in the example")
+            print("(The I will be covered in inventory)")
+            input()
+        elif learn == 3:
+            print("\n\n-------------------Combat------------------")
+            print("In combat you will see some thing like:")
+            print(f"""{Colors.red}
+        You are attacked by:
+        1    -   rat 10HP
+        2    -   spider 5HP
+        {Colors.purple}
+        """)
+            print("You can then heal buy imputing H")
+            print("Or attack by typing: ")
+            print("     -     the name of the enemy (it will attack the first enemy with that name)")
+            print("     -     type the number of the enemy to attack a specific one (as enemys die the numbers will change)")
+            print("The input prompt will loo like:")
+            print(f"""{Colors.orange}
+        What action do you want to take?
+        H: Heal
+        [any]: attack
+        {Colors.purple}""")
+            print("There is also a armor stat")
+            print("It's very simple the damage will be divided ageist the armor")
+            print("eg a 10HP attack ageist something with 2 armor will be 5 damage dealt")
+            print("Anti armor removes armor points")
+            print(" so if you have 1 anti armor an attack something with 2 armour it will hit like there is no armour")
+            print("I you are in a fight you can't win you can't run away so be careful")
+            input()
+        elif learn == 4:
+            print("\n\n-------------------Colors------------------")
+            print("Colors have meaning:")
+            print("     -     Purple: description/info")
+            print("     -     Red: enemy action")
+            print("     -     Blue: player action")
+            print("     -     Orange: input")
+            input()
+        elif learn == 5:
+            print("\n\n-------------------Save/Load------------------")
+            print("You save by going to the next level")
+            print("This is automatically done each level")
+            print("The game will only save at the start of levels")
+            print("You load a save by reopening the game where you will be promoted to load a save")
+            print("You can chose not to and make a new game or chose to where you will need to input the index of the wanted save")
+            print("YOUR CHARACTER WILL ONLY BE SAVED AFTER YOU BEAT THE FIRST LEVEL")
+            input()
+        elif learn == 6:
+            print("\n\n-------------------Inventory-------------------")
+            print("While you are waling you will notice the option (I)")
+            print("This is to access your inventory")
+            print("In your inventory you will be shown")
+            print("\nThen you can enter L to leave and start moving agin")
+            print("or you can equip or drop a item")
+            print("\nIn order to drop or equip you will need to type e or d then the index of the item to drop")
+            print("(If you drop a item you will not get it back)")
+            print("You can only have up to 9 items in your inventory the armor and weapon you are using dose not count")
+            input()
+        elif learn == 7:
+            print("\n\n-------------------Leveling up-------------------")
+            print("When you get enough xp you can choose one of 3 attributes to up grade")
+            print("You can upgrade your regen so in combat you will heal 5 hp more then before")
+            print("Up grade your max health so that you can have 10 more max health")
+            print("Or strength which is a number your damage is multiplied by")
+            print("Damage is calculated by adding your base damage of 5 adding the damage of your weapon and multiplying it by your strength")
+            input()
 
-    print("\n\n-------------------Colors------------------")
-    print("Colors have meaning:")
-    print("     -     Purple: description/info")
-    print("     -     Red: enemy action")
-    print("     -     Blue: player action")
-    print("     -     Orange: input")
-    print("\n\n-------------------Save/Load------------------")
-    print("You save by going to the next level")
-    print("This is automatically done each level")
-    print("The game will only save at the start of levels")
-    print("You load a save by reopening the game where you will be promoted to load a save")
-    print("You can chose not to and make a new game or chose to where you will need to input the index of the wanted save")
-    print("YOUR CHARACTER WILL ONLY BE SAVED AFTER YOU BEAT THE FIRST LEVEL")
-    print("\n\n-------------------Inventory-------------------")
-    print("While you are waling you will notice the option (I)")
-    print("This is to access your inventory")
-    print("In your inventory you will be shown")
-    print("\nThen you can enter L to leave and start moving agin")
-    print("or you can equip or drop a item")
-    print("\nIn order to drop or equip you will need to type e or d then the index of the item to drop")
-    print("(If you drop a item you will not get it back)")
-    print("You can only have up to 9 items in your inventory the armor and weapon you are using dose not count")
-    print("\n\n-------------------Leveling up-------------------")
-    print("When you get enough xp you can choose one of 3 attributes to up grade")
-    print("You can upgrade your regen so in combat you will heal 5 hp more then before")
-    print("Up grade your max health so that you can have 10 more max health")
-    print("Or strength which is a number your damage is multiplied by")
-    print("Damage is calculated by adding your base damage of 5 adding the damage of your weapon and multiplying it by your strength")
-    print("\n")
-
-    input()
-
-
-
-
-
-def equip(player: Player, num: int):
-    if num-1 < len(player.items) and num-1 >= 0:
-        item = player.items.pop((num-1))
-
-        if item[1] == "A":
-            if player.armor != None:
-                player.items.append(player.armor)
-            player.e_armour(armor=item)
-
-            print(f"Equipped {player.armor[0]}\n\n")
-
-        if item[1] == "W":
-            if player.weapon != None:
-                player.items.append(player.weapon)
-            player.e_weapon(weapon=item)
-
-            print(f"Equipped {player.weapon[0]}\n\n")
-    
-    else:
-        print("Invalid number")
-
-
-def drop(player: Player, num: int) -> None:
-    if num-1 < len(player.items) and num-1 >= 0:
-
-        print(f"Dropped {player.items[num-1]}")
-        del player.items[num-1]
-    
-    else:
-        print("Invalid number")
-
-
-def display_item(player: Player):
-    print(Colors.blue, end="")
-
-    if player.armor != None:
-        print(f"Equipped armor: {player.armor[0]} +{player.armor[2]} armor")
-    else:
-        print("No armor")
-
-    if player.weapon != None:
-        print(f"Equipped weapon: {player.weapon[0]} +{round((player.weapon[2] * player.damage_multi), 3)} damage ")
-    else:
-        print("No weapon")
-
-
-    for i in range(len(player.items)):
-        item = player.items[i]
-
-        if item == None:
-            print("None")
-
-        elif item[1] == "A":
-            print(f"{i+1} - {item[0]} will give {item[2]} armor")
-
-        elif item[1] == "W":
-            print(f"{i+1} - {item[0]} with a {item[2]} damage and {item[3]} armor penetrating")
-    
-    if len(player.items) <= 0:
-        print("\nYou don't have any items")
-
-
-
-def inventory(player: Player) -> None:
-    os.system("cls")
-
-    display_item(player=player)
-
-    print()
-
-    action = input(f"{Colors.orange}Do you want to \n  -  L: leave\n  -  E [num]: equip\n  - D [num]: drop \n> {Colors.blue}").strip().upper().split()
-    
-    while action != ["L"]:
-        os.system("cls")
-
-        if len(action) == 2:
-            if action[0] == "E" and action[1].isdigit():
-                equip(player=player, num=int(action[1]))
-
-            elif action[0] == "D" and action[1].isdigit():
-                drop(player=player, num=int(action[1]))
-
-            else:
-                print("invalid input\n")
-
-        display_item(player=player)
-
-        action = input(f"{Colors.orange}Do you want to \n  -  L: leave\n  -  E [num]: equip\n  - D [num]: drop \n> {Colors.blue}").strip().upper().split()
-
-
-    os.system("cls")
 
 
 def stats(player: Player):
+    print(Colors.blue, end="")
     print(f"Damage: {round(player.damage, 3)}, Health: {player.health}/{player.max_health}")
     print(f"Armor: {player.armor_rating}, Anti-armor: {player.anti_armor}")
     print(f"Level: {player.level}")
@@ -218,7 +141,7 @@ def save(player, savepoint=0):
 
 # a function that hands player movement
 def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]], None, None], savepoint=0):
-    os.system("cls")
+    clear_screen()
 
     if player_attributes[0] == None:
         player_attributes[0] = input(f"{Colors.orange}What is your character's name?\n> {Colors.blue}")
@@ -230,35 +153,33 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
     currant_room: Room = currant_map[hight//2][width//2]
 
     player_cords = {
-        "x": hight//2,
-        "y": width//2,
+        "x": width//2,
+        "y": hight//2,
     }
-
-    prev = currant_room
 
     currant_room.has_player = True
 
-    os.system("cls")
+    clear_screen()
 
     while currant_room.uniq != "exit": # intl the player reaches the exit
 
-
-        stats(player=player)
-        draw_map(current_map=currant_map) # drawing the map
-
         while player.xp >= player.xp_need:
             player.level_up() # leveling up the player
+            clear_screen()
 
         
         posable_action = ["I"]
 
         if currant_room.uniq == "heal":
-            posable_action.append("H")
+            posable_action.append("H") # letting the plyer be abel to heal
         
         if currant_room.uniq == "next":
-            posable_action.append("N")
+            posable_action.append("N")  
         
         posable_action.extend(currant_room.posable_direction)
+
+        stats(player=player)
+        draw_map(current_map=currant_map) # drawing the map
         
         # using the list of posable path ways to get a input as to which the player will move
         action: str = get_val_str(
@@ -266,29 +187,29 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
             acceptable=posable_action
         ) # getting the action the player wants to do
 
-        os.system("cls")
-
-        # going to the next map
+        # generating a new map
         if action == "N":
             save(player=player, savepoint=savepoint)
 
-            currant_map: list[list] = make_level()
+            currant_map: list[list] = make_level(player=player)
 
             currant_room: Room = currant_map[hight//2][width//2]
-
-            prev = currant_room
 
             currant_room.has_player = True
 
             player_cords = {
-                "x": hight//2,
-                "y": width//2,
+                "x": width//2,
+                "y": hight//2,
             }
 
+        # accessing the inventory 
         elif action == "I":
+            clear_screen()
             inventory(player)
+            clear_screen()
             continue
         
+        # healing the player and stoping the player from healing repeatedly
         elif action == "H":
             player.heal()
             currant_room.uniq = ""
@@ -297,32 +218,30 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
             
         # moving to the next room
         else:
-            prev = currant_room
             currant_room.has_player = False
 
+            # updating coordinates and the room
             if action == "W":
                 player_cords["y"] -= 1
-                currant_room[player_cords["y"]][player_cords["x"]]
+                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
             elif action == "D":
                 player_cords["x"] += 1
-                currant_room[player_cords["y"]][player_cords["x"]]
+                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
             elif action == "A":
                 player_cords["x"] -= 1
-                currant_room[player_cords["y"]][player_cords["x"]]
-            elif action == "s":
+                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+            elif action == "S":
                 player_cords["y"] += 1
-                currant_room[player_cords["y"]][player_cords["x"]]
-            
+                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+
             currant_room.has_player = True
         
+        clear_screen()
 
         # if there are hostiles combat will start
         if len(currant_room.hostiles) > 0:
-            run = run_combat(hostiles=currant_room.hostiles, currant_room=currant_room, player=player)
-            if run:
-                currant_room.has_player = False
-                prev.has_player = True
-                currant_room = prev
+            run_combat(hostiles=currant_room.hostiles, currant_room=currant_room, player=player)
+            clear_screen()
 
         if len(currant_room.items) > 0:
             for i in range(len(currant_room.items)):
@@ -330,14 +249,16 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
                     item = currant_room.items.pop(i)
                     player.items.append(item)
                     print(f"You picked up {item[0]}")
+            
     
-    os.system("cls")
+    clear_screen()
+
 
     print(Colors.green + "You escaped the Dungeon")
     input()
 
 def ask_tutorial():
-    tutorial_choice = get_accept(output="Do you want a tutorial? (y/n)")
+    tutorial_choice = Select_item(output="Do you want a tutorial?", items=["n", "y"])()
 
     if tutorial_choice:
         tutorial()
@@ -347,15 +268,26 @@ def start():
         with open("_internal/save.dat", "rb") as loading:
             loaded = pickle.load(loading)
 
-    except EOFError:
+    except EOFError and FileNotFoundError:
         with open("_internal/save.dat", "wb") as loading:
             pickle.dump([], loading)
             loaded = []
 
 
-    print("""
 
+    possibles = ["New save"]
+    # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
+    for character in loaded:
+            
+        possibles.append(f"""Name: {character[0]}
+Level: {character[2]}
+Heath: {character[3]}/{character[4]}""")
+    
 
+    index = Select_item(
+        output=f"""
+
+{Colors.purple}
 .--------------------------------------------------------------.
 |||   / |  / /                                                 |
 |||  /  | / /  ___     //  ___      ___      _   __      ___   |
@@ -363,37 +295,25 @@ def start():
 |||/ / |  / //       // //       //   / / // / /  / / //       |
 ||  /  | / ((____   // ((____   ((___/ / // / /  / / ((____    |
 '--------------------------------------------------------------'
+{Colors.orange}
 
-      
-""")
-
-    if len(loaded) > 0:
-        print("0: New save")
+Which save file do you want?
+""",
+        items=possibles
+    )()
         
-        # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
-        for character_index in range(len(loaded)):
-            character = loaded[character_index]
-            print(f"""
-{character_index}:
-    Name: {character[0]}
-    Level: {character[2]}
-    Health: {character[3]}/{character[4]}
-""")
+            
 
-        index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
+    # index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
 
-        if index == 0:
-            play(savepoint=len(loaded))
-        attributes = loaded[index]
+    ask_tutorial()
 
-        ask_tutorial()
+    if index == 0:
+        play(savepoint=len(loaded))
+    attributes = loaded[index-1]
 
-        play(player_attributes=attributes, savepoint=index)
+    play(player_attributes=attributes, savepoint=index)
 
-
-    else:
-        ask_tutorial()
-        play(savepoint=0)
 
 
 

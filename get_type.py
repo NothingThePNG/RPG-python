@@ -175,13 +175,9 @@ def get_val_str(output="Do you want to continue (y/n): ", acceptable=["y", "n"],
   inp = inp.upper()
 
   while not (inp in acceptable):
-      print(inp, acceptable)
-
-      print(output)
       
       inp = getch()
       inp = inp.upper()
-      inp = inp.strip()
   
   inp = inp[0]
   return inp

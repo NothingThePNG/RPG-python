@@ -15,8 +15,10 @@ def _start_level():
 
     return builder, level
 
-enem_level_1 = [["rat", 6, 3, 0, 3, 4, 1], ["baby spider", 1, 6, 0, 3, 2, 0], 
-        ["wisdom rat", 2, 1, 4, 0, 40, 2]]
+enem_level_1 = [["rat", 6, 1, 0, 3, 4, 1], ["baby spider", 1, 6, 0, 3, 15, 0], 
+        ["wisdom rat", 2, 1, 4, 0, 40, 2],]
+
+stor = [ ]
 
 items_level_1 = [["hollow log", "A", 2]]
 
@@ -44,19 +46,15 @@ def _make_map(new_map) -> Room:
             # making sure that there are cells above below and next to, so that the program wont break
             if x > 0:
                 if new_map[y][x-1] != None:
-                    new_map[y][x].left = new_map[y][x-1]
                     new_map[y][x].posable_direction.append("A")
             if x < len(new_map[y])-1:
                 if new_map[y][x+1] != None:
-                    new_map[y][x].right = new_map[y][x+1]
                     new_map[y][x].posable_direction.append("D")
             if y < len(new_map)-1:
                 if new_map[y+1][x] != None:
-                    new_map[y][x].down = new_map[y+1][x]
                     new_map[y][x].posable_direction.append("S")
             if y > 0:
                 if new_map[y-1][x] != None:
-                    new_map[y][x].up = new_map[y-1][x]
                     new_map[y][x].posable_direction.append("W")
 
     
@@ -75,7 +73,7 @@ def make_level(player: Player):
             change_room = randint(0, 30)
             if change_room == 0:
                 new_room.uniq = "heal"
-            elif change_room > 28:
+            elif change_room > 28 and (the_builder["x"] != int(width // 2) and the_builder["y"] != int(hight//2)):
                 new_room.hostiles = _make_enemys(player=player)
             new_level[y][x] = new_room
         the_builder["room count"] -= 1

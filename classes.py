@@ -1,10 +1,76 @@
 from random import *
 from get_type import *
+import keyboard
+import os
 
 
-def clamp(number, minn, maxn):
-    return max(min(maxn, number), minn)
+class Clear_screen:
+    def __init__(self) -> None:
+        if os.name == "nt":
+            self.do = "cls"
+        else:
+            self.do = "clear"
+    
+    def __call__(self):
+        os.system(self.do)
 
+
+clear_screen = Clear_screen()
+
+class Select_item:
+    def __init__(self, output, items) -> None:
+        self.output: list[str] = output
+        self.items: str = items
+        self.select = 0
+
+        
+    def up(self):
+        clear_screen()
+        self.select = max(self.select - 1, 0)
+
+        print(self.output)
+            
+        for i in range(len(self.items)):
+            if i == self.select:
+                print(f" > {self.items[i]}")
+            else:
+                print(f" - {self.items[i]}")
+    
+    def down(self):
+        clear_screen()
+        self.select = min(self.select + 1, len(self.items) - 1)
+
+
+        print(self.output)
+            
+        for i in range(len(self.items)):
+            if i == self.select:
+                print(f" > {self.items[i]}")
+            else:
+                print(f" - {self.items[i]}")
+    
+    def __call__(self) -> int:
+        clear_screen()
+        print(Colors.orange, end="")
+
+        print(self.output)
+            
+        for i in range(len(self.items)):
+            if i == self.select:
+                print(f" > {self.items[i]}")
+            else:
+                print(f" - {self.items[i]}")
+
+        
+        up = keyboard.add_hotkey("up arrow", self.up)
+        down = keyboard.add_hotkey("down arrow", self.down)
+
+        input()
+
+        keyboard.remove_hotkey(up)
+        keyboard.remove_hotkey(down)
+
+        return self.select
 
 class Colors:
     reset="\033[0m"
@@ -38,20 +104,23 @@ class Creature:
         self.items: list = items
     
     def hurt(self, damage: int, attacker, anti_armor=0) -> bool:
-        damage = max((damage / max(self.armor_rating - anti_armor, 1)), 0.5)
+        damage = max((damage / max(self.armor_rating - anti_armor, 1)), 0.5) # applying armor damage reduction and amking sure no less than 0.5 damige is delt
         self.health -= damage
 
-        print(f"{attacker} attacked {self} for {round(damage, 3)} damage")
+        print(f"{attacker} attacked {self} for {round(damage, 3)} damage\n")
         print(f"{self} has {round(self.health, 3)}HP\n")
 
+        # if it's a new attacker
         if attacker not in self.enemys:
             self.enemys.append(attacker)
 
+        # if the attacked is dead
         if self.health <= 0:
             attacker.xp += self.xp
-            print(f"{attacker} ({round((attacker.health), 3)}HP) got {self.xp}xp")
-            print(f"{attacker} now has {attacker.xp}xp")
+            print(f"{attacker} ({round((attacker.health), 3)}HP) got {self.xp}xp\n")
+            print(f"{attacker} now has {attacker.xp}xp\n")
 
+            # giving the attacker the items self has
             if len(self.items) > 0:
                 for item in self.items:
                     attacker.items.append(item)
@@ -60,7 +129,7 @@ class Creature:
         return False
 
     # attacking 
-    def attack(self, hit, damage=None) -> None:
+    def attack(self, hit, damage=None) -> bool:
         # if there is no enemys in it's list
         if len(self.enemys) <= 0:
             return 
@@ -77,6 +146,8 @@ class Creature:
         # hurting the enemy and printing the result 
         if enemy.hurt(damage, self):
             self.enemys.remove(enemy)
+            return True
+        return False
 
     def __str__(self) -> str:
         return self.name
@@ -120,25 +191,27 @@ class Player(Creature):
             regen = self.regen
 
         self.health = (self.health + regen)
-        self.health = clamp(number=self.health, minn=0, maxn=self.max_health)
+        self.health = min(max(self.health, 0), self.max_health)
 
         print(f"{self} healed for {regen}")
         print(f"{self} has {self.health}HP")
     
     def level_up(self):
-        stat = get_val_str(output=f"""{Colors.orange}Do you want to upgrade:
-    R: regen {self.regen} -> {self.regen + 5}
-    M: max health {self.max_health} -> {self.max_health + 10}
-    S: strength X{self.damage_multi} -> X{round((self.damage_multi + 0.1), 3)}
->{Colors.blue} """, acceptable=["R", "M", "S"])
+        stat = Select_item(output=f"""{Colors.orange}Do you want to upgrade:""", 
+                           items=[f"R: regen {self.regen} -> {self.regen + 5}",
+    f"M: max health {self.max_health} -> {self.max_health + 10}",
+    f"S: strength X{self.damage_multi} -> X{round(number=(self.damage_multi + 0.1), ndigits=3)}"])()
 
-        if stat == "R":
+        if stat == 0:
             self.regen += 5
-        elif stat == "M":
+        elif stat == 1:
             self.max_health += 10
-        elif stat == "S":
+        elif stat == 2:
             self.damage_multi += 0.1
-            self.damage = round(number=((5 + self.weapon[2]) * self.damage_multi), ndigits=3)
+            if self.weapon != None:
+                self.damage = round(number=((5 + self.weapon[2]) * self.damage_multi), ndigits=3)
+            else:
+                self.damage = round(number=(5 * self.damage_multi), ndigits=3)
 
         
         self.xp -= self.xp_need
@@ -146,8 +219,10 @@ class Player(Creature):
         self.level += 1
 
     def whirl_strike(self):
-        for enemy in range(len(self.enemys)):
-            self.attack(hit=enemy, damage=max(int(self.damage/3), 1))
+        enemy = 0
+        while enemy < len(self.enemys):
+            if not self.attack(hit=enemy, damage=max(int(self.damage/3), 1)):
+                enemy += 1
 
     def e_armour(self, armor):
         self.armor = armor

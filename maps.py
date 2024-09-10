@@ -6,7 +6,7 @@ def get_lines(currant_map: list, line_index: int) -> str:
     line = ""
     for r in range(len(currant_map[line_index])):
         if currant_map[line_index][r] == None:
-            sys.stdout.write(f"{Colors.reset} ^ ")
+            sys.stdout.write(f"{Colors.reset}   ")
 
                 
         else:
@@ -27,7 +27,7 @@ def get_lines(currant_map: list, line_index: int) -> str:
 
             # a room
             else:
-                sys.stdout.write(f"{Colors.reset}{Colors.revers} · ")
+                sys.stdout.write(f"{Colors.reset}{Colors.revers}   ")
     
     sys.stdout.write("\n")
 
