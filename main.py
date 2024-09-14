@@ -4,19 +4,27 @@ from classes import *
 from levels import *
 from combat import *
 from maps import *
-import pickle, keyboard
+import pickle, keyboard, sys
 
 keyboard.press_and_release('f11')
 
 clear_screen()
 
-def stop_program():
-    keyboard.press_and_release("ctrl + c")
+def stop_program() -> None:
+    """
+    The function `stop_program` is designed to stop the program by simulating the keyboard shortcut
+    "Ctrl + c" when the hotkey "F12" is pressed.
+    """
+    keyboard.press_and_release("Ctrl + c")
 
 keyboard.add_hotkey("F12", stop_program)
 
 
-def tutorial():
+def tutorial() -> None:
+    """
+    The `tutorial` function provides information on various topics such as controls, movement, combat,
+    colors, save/load, inventory, and leveling up in a text-based game.
+    """
     print(Colors.purple)
     learn = 1
     while learn != 0:
@@ -115,16 +123,41 @@ def tutorial():
 
 
 
-def stats(player: Player):
-    print(Colors.blue, end="")
-    print(f"Damage: {round(player.damage, 3)}, Health: {player.health}/{player.max_health}")
-    print(f"Armor: {player.armor_rating}, Anti-armor: {player.anti_armor}")
-    print(f"Level: {player.level}")
-    print(f"{player} has {player.xp}/{player.xp_need}xp")
+def stats(player: Player) -> None:
+    """
+    The function `stats` takes a `Player` object as input and returns a formatted string displaying
+    various statistics about the player.
+    
+    :param player: The `stats` function takes a `Player` object as a parameter and returns a formatted
+    string containing various statistics about the player. The `Player` object likely has attributes
+    such as `damage`, `health`, `max_health`, `armor_rating`, `anti_armor`, `level`, `xp`,
+    :type player: Player
+    :return: The `stats` function is returning a formatted string containing various statistics of the
+    player object passed as an argument. The string includes information such as damage, health, armor,
+    level, experience points, and more.
+    """
+    ret = ""
+    ret += (Colors.blue)
+    ret += (f"Damage: {round(player.damage, 3)}, Health: {player.health}/{player.max_health}\n")
+    ret += (f"Armor: {player.armor_rating}, Anti-armor: {player.anti_armor}\n")
+    ret += (f"Level: {player.level}\n")
+    ret += (f"{player} has {player.xp}/{player.xp_need}xp\n")
+    return ret
 
 
 
-def save(player, savepoint=0):
+def save(player:Player, savepoint=0) -> None:
+    """
+    This Python function saves player data to a file at a specified savepoint.
+    
+    :param player: The `save` function you provided is used to save the player's data to a file named
+    "_internal/save.dat". The function takes two parameters:
+    :type player: Player
+    :param savepoint: The `savepoint` parameter in the `save` function is used to specify the index at
+    which the player's data should be saved in the list of saved data. If the `savepoint` provided is
+    greater than the current number of saved data entries, a new entry will be added to the, defaults to
+    0 (optional)
+    """
     # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
 
     with open("_internal/save.dat", "rb") as read:
@@ -139,8 +172,18 @@ def save(player, savepoint=0):
         pickle.dump(data, save)
 
 
-# a function that hands player movement
-def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]], None, None], savepoint=0):
+def start_play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]]]):
+    """
+    The function `start_play` initializes a game by creating a player with specified attributes,
+    generating a game map, setting the player's initial position in the map, and returning relevant game
+    data.
+    
+    :param player_attributes: The `player_attributes` parameter in the `start_play` function is a list
+    that contains various attributes of the player character. Here is a breakdown of the default values
+    in the `player_attributes` list:
+    :return: The function `start_play` is returning four values: `currant_map`, `currant_room`,
+    `player`, and `player_cords`.
+    """
     clear_screen()
 
     if player_attributes[0] == None:
@@ -159,6 +202,76 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
 
     currant_room.has_player = True
 
+    return currant_map, currant_room, player, player_cords
+
+def get_actions(currant_room):
+    """
+    The function `get_actions` returns a list of possible actions based on the current room's unique
+    attributes and possible directions.
+    
+    :param currant_room: The `get_actions` function takes a `currant_room` object as a parameter. The
+    function checks the unique attribute of the current room and appends specific actions to the list of
+    possible actions based on the room's uniqueness
+    :return: The function `get_actions` returns a list of possible actions that can be taken in the
+    current room. The list includes the actions "I" (for interact), "H" (for heal, if the current room
+    is a healing room), "N" (for next, if the current room is a room leading to the next area), and any
+    possible directions that the player can move in from
+    """
+    posable_action = ["I"]
+
+    if currant_room.uniq == "heal":
+        posable_action.append("H") # letting the plyer be abel to heal
+    
+    if currant_room.uniq == "next":
+        posable_action.append("N")  
+    
+    posable_action.extend(currant_room.posable_direction)
+
+    return posable_action
+
+def movement_input(currant_map, currant_room, player) -> int:
+    """
+    The function `movement_input` takes the current room, map, and player information, displays
+    available actions, stats, and map, prompts the player for input on their desired action, and returns
+    the chosen action.
+    
+    :param currant_room: The `currant_room` parameter likely represents the current room or location
+    where the player is situated in the game. It is used to determine the possible actions or movements
+    that the player can take within that room
+    :param currant_map: The `movement_input` function seems to be designed to handle player movement
+    within a game. It takes in the current room, current map, and player information as parameters. The
+    function first retrieves possible actions for the current room, then generates output based on
+    player stats and the current map. It clears the
+    :param player: The `player` parameter in the `movement_input` function seems to represent the player
+    object or data structure that contains information about the player's status, such as their current
+    position, inventory, health, etc. It is likely used within the function to provide context for the
+    player's actions and to update
+    :return: The function `movement_input` returns the action that the player wants to take in the
+    current room, based on the list of possible actions available in that room.
+    """
+    posable_action = get_actions(currant_room=currant_room)
+
+    output = stats(player=player)
+    output += draw_map(current_map=currant_map) # drawing the map
+
+    clear_screen()
+
+    print(output, flush=True)
+    
+    # using the list of posable path ways to get a input as to which the player will move
+    action: str = get_val_str(
+        output=f"{Colors.orange}What do you want to do? ({', '.join(posable_action)}) {Colors.blue}",
+        acceptable=posable_action
+    ) # getting the action the player wants to do
+
+    return action
+
+
+# a function that hands player movement
+def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]], None, None], savepoint=0):
+
+    currant_map, currant_room, player, player_cords = start_play(player_attributes=player_attributes)
+
     clear_screen()
 
     while currant_room.uniq != "exit": # intl the player reaches the exit
@@ -167,25 +280,7 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
             player.level_up() # leveling up the player
             clear_screen()
 
-        
-        posable_action = ["I"]
-
-        if currant_room.uniq == "heal":
-            posable_action.append("H") # letting the plyer be abel to heal
-        
-        if currant_room.uniq == "next":
-            posable_action.append("N")  
-        
-        posable_action.extend(currant_room.posable_direction)
-
-        stats(player=player)
-        draw_map(current_map=currant_map) # drawing the map
-        
-        # using the list of posable path ways to get a input as to which the player will move
-        action: str = get_val_str(
-            output=f"{Colors.orange}What do you want to do? ({', '.join(posable_action)}) {Colors.blue}",
-            acceptable=posable_action
-        ) # getting the action the player wants to do
+        action = movement_input(currant_map, currant_room, player)
 
         # generating a new map
         if action == "N":
@@ -236,8 +331,6 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
 
             currant_room.has_player = True
         
-        clear_screen()
-
         # if there are hostiles combat will start
         if len(currant_room.hostiles) > 0:
             run_combat(hostiles=currant_room.hostiles, currant_room=currant_room, player=player)
@@ -248,7 +341,7 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
                 if len(player.items) < 10:
                     item = currant_room.items.pop(i)
                     player.items.append(item)
-                    print(f"You picked up {item[0]}")
+                    sys.stdout.write(f"You picked up {item[0]}")
             
     
     clear_screen()
@@ -264,6 +357,11 @@ def ask_tutorial():
         tutorial()
 
 def start():
+    """
+    The `start()` function loads saved character data from a file, displays a menu of saved characters
+    for selection, and then proceeds to play the game with the selected character or start a new game if
+    chosen.
+    """
     try:
         with open("_internal/save.dat", "rb") as loading:
             loaded = pickle.load(loading)
@@ -272,45 +370,46 @@ def start():
         with open("_internal/save.dat", "wb") as loading:
             pickle.dump([], loading)
             loaded = []
+    except:
+        with open("_internal/save.dat", "wb") as loading:
+            pickle.dump([], loading)
+            loaded = []
 
 
-
-    possibles = ["New save"]
+    possibles = []
     # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
     for character in loaded:
             
         possibles.append(f"""Name: {character[0]}
 Level: {character[2]}
-Heath: {character[3]}/{character[4]}""")
-    
+Heath: {character[3]}/{character[4]}
+""")
+        
+    possibles.append("New save")
 
     index = Select_item(
         output=f"""
 
-{Colors.purple}
-.--------------------------------------------------------------.
-|||   / |  / /                                                 |
-|||  /  | / /  ___     //  ___      ___      _   __      ___   |
-||| / /||/ / //___) ) // //   ) ) //   ) ) // ) )  ) ) //___) )|
-|||/ / |  / //       // //       //   / / // / /  / / //       |
-||  /  | / ((____   // ((____   ((___/ / // / /  / / ((____    |
-'--------------------------------------------------------------'
-{Colors.orange}
+{Colors.purple} {Colors.bold}
+        .--------------------------------------------------------------.
+        |||   / |  / /                                                 |
+        |||  /  | / /  ___     //  ___      ___      _   __      ___   |
+        ||| / /||/ / //___) ) // //   ) ) //   ) ) // ) )  ) ) //___) )|
+        |||/ / |  / //       // //       //   / / // / /  / / //       |
+        ||  /  | / ((____   // ((____   ((___/ / // / /  / / ((____    |
+        '--------------------------------------------------------------'
+{Colors.reset}{Colors.orange}
 
 Which save file do you want?
 """,
         items=possibles
     )()
-        
-            
-
-    # index = get_int("Which save do you want?\n> ", vaid_range=[0, len(loaded)])
 
     ask_tutorial()
 
-    if index == 0:
+    if index == len(possibles)-1:
         play(savepoint=len(loaded))
-    attributes = loaded[index-1]
+    attributes = loaded[index]
 
     play(player_attributes=attributes, savepoint=index)
 
@@ -319,6 +418,9 @@ Which save file do you want?
 
 
 def main():
+    """
+    The main function checks if the script is being run directly and then calls the start function.
+    """
     if __name__ == "__main__":
         start()
 

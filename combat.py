@@ -1,19 +1,20 @@
 from time import sleep
 from classes import *
 from get_type import *
-#import os
+from playsound import playsound
 
 def _start_combat(hostiles, player):
+    clear_screen()
     # telling the player what is fighting them
-    print(Colors.red, "You are attacked by:")
+    print(Colors.red, Colors.bold, "You are attacked by:")
 
     for i in range(len(hostiles)):
         hostiles[i].enemys.append(player)
-        print(f"{i+1}    -   {hostiles[i]} {hostiles[i].health}HP")
+        print(f"    -   {hostiles[i]} {hostiles[i].health}HP")
     
-    sleep(1)
+    sleep(0.5)
 
-    print(Colors.blue, f"You have {player.health}HP\n")
+    print(Colors.reset, Colors.blue, f"You have {player.health}HP\n")
 
     sleep(0.2)
 
@@ -25,12 +26,14 @@ def run_combat(hostiles: list[Creature], currant_room: Room, player: Player):
     hostiles = _start_combat(hostiles=hostiles, player=player)
 
     while len(hostiles) > 0 and player.health > 0:
-        print(Colors.red, end=" ")
+        print(Colors.red, Colors.bold, end="")
 
         attackers = []
         # getting the hostiles to attack the player
         for i in hostiles:
             i.attack(None)
+            playsound("_internal/rpg_hit.wav")
+
             sleep(.5)
 
             attackers.append(f"{i.name}\n       {i.health}HP")
@@ -38,7 +41,9 @@ def run_combat(hostiles: list[Creature], currant_room: Room, player: Player):
         attackers.append("Whirl strike")
         
         attackers.append("Run")
-        
+
+        print(Colors.reset, end="")
+
         input()
         Clear_screen()
         player_turn_fin = False
@@ -61,8 +66,9 @@ def run_combat(hostiles: list[Creature], currant_room: Room, player: Player):
                 print(Colors.blue, end="")
                 player.attack(hit=action)
                 player_turn_fin = True
-        
-        input()
+
+
+        sleep(0.1)
         
         if len(hostiles) > 0:
             # contiguously displaying the enemies so the player dose not have to remember 
@@ -76,6 +82,6 @@ def run_combat(hostiles: list[Creature], currant_room: Room, player: Player):
 
     currant_room.hostiles = hostiles
     
-    sleep(1)
+    sleep(0.2)
     
     return False

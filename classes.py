@@ -4,7 +4,10 @@ import keyboard
 import os
 
 
+# The `Clear_screen` class is designed to clear the terminal screen in a platform-independent way
+# using the `os` module in Python.
 class Clear_screen:
+    import os
     def __init__(self) -> None:
         if os.name == "nt":
             self.do = "cls"
@@ -17,6 +20,8 @@ class Clear_screen:
 
 clear_screen = Clear_screen()
 
+# This Python class `Select_item` allows users to navigate and select items from a list using keyboard
+# inputs for up and down movements.
 class Select_item:
     def __init__(self, output, items) -> None:
         self.output: list[str] = output
@@ -72,6 +77,7 @@ class Select_item:
 
         return self.select
 
+# The `Colors` class defines various color and text formatting codes for use in terminal output.
 class Colors:
     reset="\033[0m"
     revers="\u001b[7m"
@@ -86,6 +92,8 @@ class Colors:
 
     back_cyan="\u001b[46;1m"
 
+# The `Creature` class represents a creature with attributes like health, damage, armor, and methods
+# for attacking and taking damage in a turn-based combat system.
 class Creature:
     def __init__(self, attributes, items=[]) -> None:
         self.name: str = attributes[0]
@@ -104,6 +112,28 @@ class Creature:
         self.items: list = items
     
     def hurt(self, damage: int, attacker, anti_armor=0) -> bool:
+        """
+        This Python function calculates damage dealt to a character, reduces health accordingly, handles
+        attacker information, grants experience points, and transfers items upon defeating the
+        character.
+        
+        :param damage: The `damage` parameter in the `hurt` method represents the amount of damage that
+        will be inflicted on the target entity (self). It is an integer value indicating the strength of
+        the attack
+        :type damage: int
+        :param attacker: The `attacker` parameter in the `hurt` method represents the entity or object
+        that is causing damage to the entity on which the method is being called. It is used to keep
+        track of who is attacking the entity and can be used to perform actions related to the attacker,
+        such as gaining
+        :param anti_armor: The `anti_armor` parameter in the `hurt` method represents the amount of
+        armor penetration or reduction that the attacker has. It is used to calculate the actual damage
+        dealt to the target after considering the target's armor rating and the attacker's anti-armor
+        value. By subtracting the `anti, defaults to 0 (optional)
+        :return: The `hurt` method returns a boolean value. It returns `True` if the health of the
+        entity being attacked (`self`) drops to 0 or below, indicating that the entity has been
+        defeated. In this case, the method also transfers experience points (`xp`) from the defeated
+        entity to the attacker, and transfers any items the defeated entity had to the attacker.
+        """
         damage = max((damage / max(self.armor_rating - anti_armor, 1)), 0.5) # applying armor damage reduction and amking sure no less than 0.5 damige is delt
         self.health -= damage
 

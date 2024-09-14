@@ -1,14 +1,27 @@
 from classes import *
 
 def equipped(player: Player) -> str:
+    """
+    This Python function takes a Player object as input and returns a string describing the player's
+    equipped armor and weapon, including their respective attributes.
+    
+    :param player: The function `equipped` takes a `Player` object as input and returns a string
+    describing the player's equipped armor and weapon
+    :type player: Player
+    :return: The function `equipped(player: Player) -> str` returns a string that provides information
+    about the player's equipped armor and weapon. If the player has equipped armor, it includes the
+    armor's name and the amount of armor it provides. If the player has equipped a weapon, it includes
+    the weapon's name, the calculated damage taking into account the player's damage multiplier, and the
+    armor penetrating value
+    """
     ret = ""
     if player.armor != None:
-        ret += f"{player.name}'s armor: {player.armor[0]} giving +{player.armor[2]} armor\n"
+        ret += f"\n\n{player.name}'s armor: {player.armor[0]} giving +{player.armor[2]} armor\n"
     else:
-        ret += f"{player.name} has no equipped armor\n"
+        ret += f"\n\n{player.name} has no equipped armor\n"
     
     if player.weapon != None:
-        ret += f"""{player.name}'s weapon: {player.weapon[0]} giving 
+        ret += f"""\n\n{player.name}'s weapon: {player.weapon[0]} giving 
         {round((player.weapon[2] * player.damage_multi), 3)} damage 
         {player.weapon[3]} armor penetrating
         """
@@ -62,6 +75,15 @@ def get_item(player: Player) -> int:
 
 
 def inventory(player: Player) -> None:
+    """
+    This Python function manages a player's inventory by allowing them to interact with items such as
+    equipping or dropping them.
+    
+    :param player: The `inventory` function seems to be a part of a game inventory system where the
+    player can interact with their items. It looks like it allows the player to select an item from
+    their inventory and then choose to equip, drop, or cancel the action
+    :type player: Player
+    """
     item_index = get_item(player=player)
     
     
