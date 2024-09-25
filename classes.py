@@ -182,6 +182,8 @@ class Creature:
     def __str__(self) -> str:
         return self.name
 
+# The `Player` class in Python defines a character with various attributes such as health, damage,
+# armor, and weapons for a text-based game.
 class Player(Creature):
     # giving the player the unique stats
     def __init__(self, attributes: list, ) -> None:
@@ -217,6 +219,14 @@ class Player(Creature):
             self.armor_rating += self.armor[2]
 
     def heal(self, regen=0) -> None:
+        """
+        The `heal` function in Python increases a character's health by a specified amount or their
+        default regeneration value.
+        
+        :param regen: The `regen` parameter in the `heal` method is used to specify the amount of health
+        points that a character should be healed for. If no value is provided for `regen`, it defaults
+        to the value of `self.regen`, defaults to 0 (optional)
+        """
         if regen == 0:
             regen = self.regen
 
@@ -227,10 +237,14 @@ class Player(Creature):
         print(f"{self} has {self.health}HP")
     
     def level_up(self):
+        """
+        The `level_up` function allows the player to upgrade their character's stats such as regen, max
+        health, and strength in a text-based game.
+        """
         stat = Select_item(output=f"""{Colors.orange}Do you want to upgrade:""", 
                            items=[f"R: regen {self.regen} -> {self.regen + 5}",
     f"M: max health {self.max_health} -> {self.max_health + 10}",
-    f"S: strength X{self.damage_multi} -> X{round(number=(self.damage_multi + 0.1), ndigits=3)}"])()
+    f"S: strength X{round(self.damage_multi, 3)} -> X{round(number=(self.damage_multi + 0.1), ndigits=3)}"])()
 
         if stat == 0:
             self.regen += 5
@@ -249,21 +263,50 @@ class Player(Creature):
         self.level += 1
 
     def whirl_strike(self):
+        """
+        The whirl_strike function iterates through enemies and deals damage to them based on a fraction
+        of the player's damage.
+        """
         enemy = 0
         while enemy < len(self.enemys):
             if not self.attack(hit=enemy, damage=max(int(self.damage/3), 1)):
                 enemy += 1
 
     def e_armour(self, armor):
+        """
+        This Python function sets the armor attribute and calculates the armor rating based on the input
+        armor parameter.
+        
+        :param armor: It looks like the `e_armour` method is designed to set the armor and armor rating
+        for an object. The `armor` parameter seems to be a list or tuple containing information about
+        the armor, and the method sets the `armor` attribute of the object to the entire `armor`
+        parameter
+        """
         self.armor = armor
         self.armor_rating = armor[2]
 
     def e_weapon(self, weapon):
+        """
+        The function `e_weapon` assigns a weapon to an object, updates its damage and anti-armor
+        properties based on the weapon's attributes.
+        
+        :param weapon: The `weapon` parameter is a list that contains information about the weapon being
+        used. The elements of the list are as follows:
+        """
         self.weapon = weapon
 
         self.damage += self.weapon[2] 
         self.damage = self.damage * self.damage_multi
         self.anti_armor = self.weapon[3]
+    
+    def __str__(self) -> str:
+        ret = ""
+        ret += (Colors.blue)
+        ret += (f"Damage: {round(self.damage, 3)}, Health: {self.health}/{self.max_health}\n")
+        ret += (f"Armor: {self.armor_rating}, Anti-armor: {self.anti_armor}\n")
+        ret += (f"Level: {self.level}\n")
+        ret += (f"{self} has {self.xp}/{self.xp_need}xp\n")
+        return ret
 
 
 class Room:
@@ -272,6 +315,21 @@ class Room:
                  hostiles=[], 
                  uniq=None,
                  items=[])-> None:
+        """
+        This Python function initializes a room object with information about hostiles, unique elements,
+        items, and map details.
+        
+        :param hostiles: The `hostiles` parameter in the `__init__` method is a list that contains
+        instances of the `Creature` class. It is used to store information about hostile creatures
+        present in the room
+        :param uniq: The `uniq` parameter in the `__init__` method appears to be a variable that can
+        hold a unique identifier or key for the room. This could be used to distinguish one room from
+        another in a game or application. It seems to be optional since it is initialized with a default
+        value of
+        :param items: The `items` parameter in the `__init__` method is used to initialize the list of
+        items present in the room. These items could be objects that the player can interact with or
+        collect during gameplay
+        """
         
         # all adjacent rooms that the player can move to
         self.posable_direction = []

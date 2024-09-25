@@ -4,6 +4,19 @@ from get_type import *
 from playsound import playsound
 
 def _start_combat(hostiles, player):
+    """
+    The function `_start_combat` initiates a combat scenario by displaying the hostiles attacking the
+    player and setting up the enemies for the player character.
+    
+    :param hostiles: The `hostiles` parameter in the `_start_combat` function seems to represent a list
+    of enemies that the player will be fighting against. Each enemy in the list has attributes like
+    `enemys` and `health`. The function iterates over the list of hostiles, adds the player
+    :param player: The `player` parameter in the `_start_combat` function represents the player
+    character who is being attacked by the hostiles. The function sets up the combat scenario by
+    displaying the hostiles that are attacking the player and updating the player's enemies list to
+    include the hostiles. The player's health
+    :return: The function `_start_combat` is returning the list `hostiles`.
+    """
     clear_screen()
     # telling the player what is fighting them
     print(Colors.red, Colors.bold, "You are attacked by:")

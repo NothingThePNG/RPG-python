@@ -31,6 +31,18 @@ def equipped(player: Player) -> str:
     return ret
 
 def equip(player: Player, num: int) -> None:
+    """
+    The function `equip` equips a player with an item from their inventory based on the item type.
+    
+    :param player: The `player` parameter in the `equip` function seems to be an instance of a `Player`
+    class or object. This player object likely has attributes such as `items`, `armor`, `weapon`, and
+    methods like `e_armour` and `e_weapon`
+    :type player: Player
+    :param num: The `num` parameter in the `equip` function represents the index of the item in the
+    player's inventory that the player wants to equip. The function will remove the item at index
+    `(num-1)` from the player's inventory and then equip it based on its type (armor or weapon)
+    :type num: int
+    """
     item = player.items.pop((num-1))
 
     if item[1] == "A":
@@ -45,6 +57,16 @@ def equip(player: Player, num: int) -> None:
 
 
 def drop(player: Player, num: int) -> None:
+    """
+    The function `drop` removes an item from a player's inventory based on the provided index.
+    
+    :param player: Player object representing a player in the game
+    :type player: Player
+    :param num: The `num` parameter in the `drop` function represents the index of the item in the
+    player's items list that you want to drop. It is an integer value that indicates the position of the
+    item in the list
+    :type num: int
+    """
     if num-1 < len(player.items) and num-1 >= 0:
 
         print(f"Dropped {player.items[num-1]}")
@@ -55,6 +77,20 @@ def drop(player: Player, num: int) -> None:
 
 
 def get_item(player: Player) -> int:
+    """
+    This function takes a player object and displays their items categorized as armor or weapon,
+    allowing the player to select an item.
+    
+    :param player: The `get_item` function takes a `Player` object as input and returns an integer. The
+    function iterates through the items in the player's inventory and categorizes them as either armor
+    or weapon based on the second element of the item tuple. It then appends a formatted string
+    describing each item
+    :type player: Player
+    :return: The function `get_item(player: Player) -> int` is returning the result of calling the
+    `Select_item` function with the arguments `f"{equipped(player=player)}\n{Colors.orange}Your items:"`
+    as the prompt and `player_items` as the list of items. The return value is not explicitly specified
+    in the code snippet provided.
+    """
     player_items = []
 
     for item in player.items:

@@ -4,6 +4,12 @@ hight = 20
 width = 40
 
 def _start_level():
+    """
+    The function `_start_level` initializes a builder dictionary and a 2D list representing a level
+    layout.
+    :return: The function `_start_level` is returning a tuple containing two elements: a dictionary
+    named `builder` and a 2D list named `level`.
+    """
     builder = {
     "room count": 600,
     "padding": 1,
@@ -15,16 +21,32 @@ def _start_level():
 
     return builder, level
 
-enem_level_1 = [["rat", 6, 1, 0, 3, 4, 1], ["baby spider", 1, 6, 0, 3, 15, 0], 
-        ["wisdom rat", 2, 1, 4, 0, 40, 2],]
+enem_level_1 = [["rat", 6, 2, 0, 3, 4, 1], ["baby spider", 1, 6, 0, 3, 15, 0], 
+        ["wisdom rat", 2, 0.5, 4, 0, 40, 2],]
 
-stor = [ ]
+enem_inpos = [["Lord Death of Murder Mountain", 1000, 1000, 1000, 1000, 1000, 1000]]
 
-items_level_1 = [["hollow log", "A", 2]]
+#stor = [ ]
+
+items_level_1 = [["Hollow Log", "A", 2]]
 
 def _make_enemys(player: Player):
+    """
+    This Python function creates a list of enemy creatures based on the player's level.
+    
+    :param player: The function `_make_enemys` takes a `Player` object as a parameter. The function
+    checks the player's level and assigns a list of enemies based on the player's level. It then creates
+    a random number of enemy creatures (between 1 and 3) from the selected list and
+    :type player: Player
+    :return: A list of enemy creatures is being returned. The number of creatures in the list is
+    randomly determined between 1 and 3, and the type of enemy creatures added to the list depends on
+    the player's level. If the player's level is less than or equal to 5, level 1 enemies are added to
+    the list. Otherwise, a different set of enemies is added to the list.
+    """
     if player.level <= 5:
         enem = enem_level_1
+    else:
+        enem = enem_inpos
     
     ret = []
 

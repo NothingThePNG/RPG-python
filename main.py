@@ -122,29 +122,7 @@ def tutorial() -> None:
             input()
 
 
-
-def stats(player: Player) -> None:
-    """
-    The function `stats` takes a `Player` object as input and returns a formatted string displaying
-    various statistics about the player.
-    
-    :param player: The `stats` function takes a `Player` object as a parameter and returns a formatted
-    string containing various statistics about the player. The `Player` object likely has attributes
-    such as `damage`, `health`, `max_health`, `armor_rating`, `anti_armor`, `level`, `xp`,
-    :type player: Player
-    :return: The `stats` function is returning a formatted string containing various statistics of the
-    player object passed as an argument. The string includes information such as damage, health, armor,
-    level, experience points, and more.
-    """
-    ret = ""
-    ret += (Colors.blue)
-    ret += (f"Damage: {round(player.damage, 3)}, Health: {player.health}/{player.max_health}\n")
-    ret += (f"Armor: {player.armor_rating}, Anti-armor: {player.anti_armor}\n")
-    ret += (f"Level: {player.level}\n")
-    ret += (f"{player} has {player.xp}/{player.xp_need}xp\n")
-    return ret
-
-
+#_____________________________________________________________
 
 def save(player:Player, savepoint=0) -> None:
     """
@@ -160,7 +138,7 @@ def save(player:Player, savepoint=0) -> None:
     """
     # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
 
-    with open("_internal/save.dat", "rb") as read:
+    with open("_internal/save.xml", "rb") as read:
         data = pickle.load(read)
     
     if savepoint + 1 > len(data):
@@ -168,9 +146,10 @@ def save(player:Player, savepoint=0) -> None:
     else:
         data[savepoint] = [player.name, player.xp, player.level, player.health, player.max_health, player.regen, player.damage_multi, player.items, player.armor, player.weapon]
 
-    with open("_internal/save.dat", "wb") as save:
+    with open("_internal/save.xml", "wb") as save:
         pickle.dump(data, save)
 
+#_____________________________________________________________
 
 def start_play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]]]):
     """
@@ -250,13 +229,11 @@ def movement_input(currant_map, currant_room, player) -> int:
     current room, based on the list of possible actions available in that room.
     """
     posable_action = get_actions(currant_room=currant_room)
-
-    output = stats(player=player)
-    output += draw_map(current_map=currant_map) # drawing the map
+    output = draw_map(current_map=currant_map) # drawing the map
 
     clear_screen()
 
-    print(output, flush=True)
+    print(player, output, flush=True)
     
     # using the list of posable path ways to get a input as to which the player will move
     action: str = get_val_str(
@@ -266,6 +243,50 @@ def movement_input(currant_map, currant_room, player) -> int:
 
     return action
 
+def move_player(player_cords, action, currant_map, currant_room):
+    """
+    The function `move_player` updates the player's coordinates and the current room based on the
+    specified action in a game map.
+    
+    :param player_cords: The `player_cords` parameter is a dictionary that stores the current
+    coordinates of the player on the map. It contains the keys "x" and "y" representing the player's
+    position along the x-axis and y-axis respectively. The function `move_player` takes this dictionary
+    as input and updates
+    :param action: The `action` parameter in the `move_player` function represents the direction in
+    which the player wants to move. It can take the values "W" for up, "D" for right, "A" for left, and
+    "S" for down. Based on the action provided, the
+    :param currant_map: The `currant_map` parameter in the `move_player` function seems to represent a
+    map or grid of rooms in a game. Each room in the map is accessed using coordinates `[y][x]`, where
+    `y` represents the row and `x` represents the column
+    :param currant_room: The `currant_room` parameter in the `move_player` function represents the
+    current room where the player is located. It is a part of the game map and contains information
+    about the room, such as whether the player is currently in that room (`has_player` attribute). The
+    function updates the player
+    :return: The function `move_player` returns the updated current room object and the updated player
+    coordinates after the player has moved according to the specified action (W, A, S, D) on the current
+    map.
+    """
+    currant_room.has_player = False
+
+    # updating coordinates and the room
+    if action == "W":
+        player_cords["y"] -= 1
+        currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+    elif action == "D":
+        player_cords["x"] += 1
+        currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+    elif action == "A":
+        player_cords["x"] -= 1
+        currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+    elif action == "S":
+        player_cords["y"] += 1
+        currant_room = currant_map[player_cords["y"]][player_cords["x"]]
+
+    currant_room.has_player = True
+
+    return currant_room, player_cords
+
+#_____________________________________________________________
 
 # a function that hands player movement
 def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0, 1]], None, None], savepoint=0):
@@ -304,7 +325,7 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
             clear_screen()
             continue
         
-        # healing the player and stoping the player from healing repeatedly
+        # healing the player and stopping the player from healing repeatedly
         elif action == "H":
             player.heal()
             currant_room.uniq = ""
@@ -313,23 +334,8 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
             
         # moving to the next room
         else:
-            currant_room.has_player = False
-
-            # updating coordinates and the room
-            if action == "W":
-                player_cords["y"] -= 1
-                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
-            elif action == "D":
-                player_cords["x"] += 1
-                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
-            elif action == "A":
-                player_cords["x"] -= 1
-                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
-            elif action == "S":
-                player_cords["y"] += 1
-                currant_room = currant_map[player_cords["y"]][player_cords["x"]]
-
-            currant_room.has_player = True
+            currant_room, player_cords = move_player(player_cords, action, currant_map, currant_room)
+            
         
         # if there are hostiles combat will start
         if len(currant_room.hostiles) > 0:
@@ -343,18 +349,23 @@ def play(player_attributes=[None, 0, 1, 50, 50, 10, 1.0, [["rusty nail", "W", 0,
                     player.items.append(item)
                     sys.stdout.write(f"You picked up {item[0]}")
             
-    
     clear_screen()
-
 
     print(Colors.green + "You escaped the Dungeon")
     input()
 
+#_____________________________________________________________
+
 def ask_tutorial():
+    """
+    The function `ask_tutorial` prompts the user to choose whether they want a tutorial and then calls
+    the `tutorial` function if the user selects 'y'.
+    """
     tutorial_choice = Select_item(output="Do you want a tutorial?", items=["n", "y"])()
 
     if tutorial_choice:
         tutorial()
+
 
 def start():
     """
@@ -363,34 +374,35 @@ def start():
     chosen.
     """
     try:
-        with open("_internal/save.dat", "rb") as loading:
+        with open("_internal/save.xml", "rb") as loading:
             loaded = pickle.load(loading)
 
     except EOFError and FileNotFoundError:
-        with open("_internal/save.dat", "wb") as loading:
+        with open("_internal/save.xml", "wb") as loading:
             pickle.dump([], loading)
             loaded = []
     except:
-        with open("_internal/save.dat", "wb") as loading:
+        with open("_internal/save.xml", "wb") as loading:
             pickle.dump([], loading)
             loaded = []
-
-
-    possibles = []
-    # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
-    for character in loaded:
-            
-        possibles.append(f"""Name: {character[0]}
-Level: {character[2]}
-Heath: {character[3]}/{character[4]}
-""")
         
-    possibles.append("New save")
+    playing = False
+    while not playing:
+        possibles = []
+        # name, xp, level, health, max health, regen, damage multi, items, armor, weapon
+        for character in loaded:
+                
+            possibles.append(f"""Name: {character[0]}
+    Level: {character[2]}
+    Heath: {character[3]}/{character[4]}
+    """)
+            
+        possibles.append("New save")
 
-    index = Select_item(
-        output=f"""
+        index = Select_item(
+            output=f"""
 
-{Colors.purple} {Colors.bold}
+{Colors.purple}{Colors.bold}
         .--------------------------------------------------------------.
         |||   / |  / /                                                 |
         |||  /  | / /  ___     //  ___      ___      _   __      ___   |
@@ -402,8 +414,19 @@ Heath: {character[3]}/{character[4]}
 
 Which save file do you want?
 """,
-        items=possibles
-    )()
+            items=possibles
+        )()
+
+        if index != len(loaded):
+            file_action = Select_item("What do you want to do with the file?", ["Play", "Cancel", "Delete"])()
+            if file_action == 0:
+                playing = True
+            elif file_action == 2:
+                loaded.pop(index)
+                with open("_internal/save.dat", "wb") as loading:
+                    pickle.dump(loaded, loading)
+        else:
+            playing = True
 
     ask_tutorial()
 
@@ -412,8 +435,6 @@ Which save file do you want?
     attributes = loaded[index]
 
     play(player_attributes=attributes, savepoint=index)
-
-
 
 
 
