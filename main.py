@@ -37,9 +37,6 @@ def tutorial() -> None:
             print(" F12 - quit")
             print(" W,A,S,D - move")
             print(" I - inventory")
-            print(" E [number] - equip item at selected index")
-            print(" D [number] - drop item at selected index")
-            print(" [any] - the name of a enemy to attack the first enemy with that name or the number of the enemy")
             input()
         elif learn == 2:
             print("-------------------Movement------------------")
@@ -67,16 +64,6 @@ def tutorial() -> None:
         2    -   spider 5HP
         {Colors.purple}
         """)
-            print("You can then heal buy imputing H")
-            print("Or attack by typing: ")
-            print("     -     the name of the enemy (it will attack the first enemy with that name)")
-            print("     -     type the number of the enemy to attack a specific one (as enemys die the numbers will change)")
-            print("The input prompt will loo like:")
-            print(f"""{Colors.orange}
-        What action do you want to take?
-        H: Heal
-        [any]: attack
-        {Colors.purple}""")
             print("There is also a armor stat")
             print("It's very simple the damage will be divided ageist the armor")
             print("eg a 10HP attack ageist something with 2 armor will be 5 damage dealt")
