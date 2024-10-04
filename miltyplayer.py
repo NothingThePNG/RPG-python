@@ -4,11 +4,12 @@ from classes import *
 from levels import *
 from combat import *
 from maps import *
-import pickle, socket, _thread
+import pickle, keyboard
 
 keyboard.press_and_release('f11')
 
 clear_screen()
+
 
 def stop_program() -> None:
     """

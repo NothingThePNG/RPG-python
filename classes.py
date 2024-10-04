@@ -19,7 +19,6 @@ class Clear_screen:
 
 
 clear_screen = Clear_screen()
-
 # This Python class `Select_item` allows users to navigate and select items from a list using keyboard
 # inputs for up and down movements.
 class Select_item:
