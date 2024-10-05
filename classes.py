@@ -304,7 +304,7 @@ class Player(Creature):
         ret += (f"Damage: {round(self.damage, 3)}, Health: {self.health}/{self.max_health}\n")
         ret += (f"Armor: {self.armor_rating}, Anti-armor: {self.anti_armor}\n")
         ret += (f"Level: {self.level}\n")
-        ret += (f"{self} has {self.xp}/{self.xp_need}xp\n")
+        ret += (f"{self.name} has {self.xp}/{self.xp_need}xp\n")
         return ret
 
 
